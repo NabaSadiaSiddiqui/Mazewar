@@ -26,7 +26,14 @@ import javax.swing.JOptionPane;
 import java.awt.GridBagLayout;
 import java.awt.GridBagConstraints;
 import javax.swing.BorderFactory;
+
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.io.Serializable;
+import java.net.Socket;
+import java.net.UnknownHostException;
+import java.util.concurrent.BlockingQueue;
 
 /**
  * The entry point and glue code for the game.  It also contains some helpful
@@ -36,6 +43,17 @@ import java.io.Serializable;
  */
 
 public class Mazewar extends JFrame {
+		
+		/**
+		 * Socket for communication with the server
+		 */
+		static Socket socket = null;
+		/**
+		 * Data structures to read/write to/from out/in streams
+		 */
+		static ObjectOutputStream out = null;
+		static ObjectInputStream in = null;
+	
 
         /**
          * The default width of the {@link Maze}.
@@ -119,7 +137,7 @@ public class Mazewar extends JFrame {
         /** 
          * The place where all the pieces are put together. 
          */
-        public Mazewar() {
+        public Mazewar(String hostname, int port) {
                 super("ECE419 Mazewar");
                 consolePrintLn("ECE419 Mazewar started!");
                 
@@ -141,11 +159,18 @@ public class Mazewar extends JFrame {
                 
                 // You may want to put your network initialization code somewhere in
                 // here.
+                //TODO: put network initialization code here
+                initNetwork(hostname, port);
+
                 
                 // Create the GUIClient and connect it to the KeyListener queue
                 guiClient = new GUIClient(name);
                 maze.addClient(guiClient);
                 this.addKeyListener(guiClient);
+                
+                //TODO: register client with server
+                registerWithServer(guiClient);
+
                 
                 // Use braces to force constructors not to be called at the beginning of the
                 // constructor.
@@ -222,8 +247,82 @@ public class Mazewar extends JFrame {
          * @param args Command-line arguments.
          */
         public static void main(String args[]) {
+        	
+        	String hostname = "localhost";
+			int port = 8080;
+			
+			if(args.length == 2) {
+				hostname = args[0];
+				port = Integer.parseInt(args[1]);
+			} else {
+				System.err.println("ERROR: Invalid arguments!");
+				System.exit(-1);
+			}
 
-                /* Create the GUI */
-                new Mazewar();
+            /* Create the GUI */
+            new Mazewar(hostname, port);
+        }
+        
+        private static void initNetwork(String hostname, int port) {
+        	try {
+    			socket = new Socket(hostname, port);
+    			out = new ObjectOutputStream(socket.getOutputStream());
+    			in = new ObjectInputStream(socket.getInputStream());
+    		} catch(UnknownHostException e) {
+    			System.err.println("ERROR: Don't know where to connect!");
+    			System.exit(1);
+    		} catch(IOException e) {
+    			System.err.println("ERROR: Coudn't get I/O for the connection");
+    			System.exit(1);
+    		}
+        }
+        
+        private static void registerWithServer(Client client) {
+        	String name = client.getName();
+        	Point location = client.getPoint();
+        	String orientation = client.getOrientation().toString();
+        	
+        	/* Make a request to register */
+        	MazewarPacket packetToServer = new MazewarPacket();
+        	packetToServer.type = MazewarPacket.CLIENT_JOIN;
+        	packetToServer.playerInfo = new PlayerMeta(name, location.getX(), location.getY(), orientation);
+        	
+        	try {
+				out.writeObject(packetToServer);
+				
+	        	/* Check registration passed */
+				MazewarPacket packetFromServer = (MazewarPacket) in.readObject();
+				if(packetFromServer.type == MazewarPacket.SERVER_ERROR) {
+					System.err.println("ERROR: There are already too many players in the game");
+					System.exit(1);
+				}
+				
+			} catch (IOException e) {
+				System.err.println("ERROR: Could not write to output stream");
+				System.exit(1);
+			} catch (ClassNotFoundException e) {
+				System.err.println("ERROR: MazewarPacket class does not exist...uh oh");
+				System.exit(1);
+			}
+        	
+        	/*try {
+				
+				
+				
+				if(packetFromServer.type == MazewarPacket.SERVER_BROADCAST_PLAYERS) {
+					System.out.println("No error in adding a player");
+					BlockingQueue activePlayers = packetFromServer.activeClients;
+					System.out.println("Number of players is " + String.valueOf(activePlayers.size()));
+					System.out.println("They include " + ((PlayerMeta)activePlayers.remove()).name
+				} else  else {
+					System.out.println("Hmm...");
+				}
+			} catch (IOException e) {
+				System.err.println("ERROR: Could not read from input stream");
+				System.exit(1);
+			} catch (ClassNotFoundException e) {
+				System.err.println("ERROR: MazewarPacket class does not exist...uh oh");
+				System.exit(1);
+			}*/
         }
 }
