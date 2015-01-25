@@ -4,7 +4,7 @@ import java.util.concurrent.BlockingQueue;
 
 public class SharedData {
 	
-	static int MAX_PLAYERS = 4;
+	static int MAX_PLAYERS = 2;
 	
 	/**
 	 * Variable to hold current number of players in the game

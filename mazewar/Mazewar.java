@@ -309,7 +309,7 @@ public class Mazewar extends JFrame {
 			}
         }
         
-        private static void addRemoteClients(Client self, Maze maze) {        	
+        private static void addRemoteClients(Client self, Maze maze) {      	
         	try {				
 	        	/* Get remote clients */
 				MazewarPacket packetFromServer = (MazewarPacket) in.readObject();

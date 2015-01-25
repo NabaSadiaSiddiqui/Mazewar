@@ -36,6 +36,7 @@ public class MazewarPacket implements Serializable{
 	 */
 	public static final int CLIENT_NULL = 0;
 	public static final int CLIENT_MOVE = 101;
+	public static final int CLIENT_EXIT = 102;
 	public static final int CLIENT_DIE = 103;
 
 	public static final int CLIENT_JOIN = 104;

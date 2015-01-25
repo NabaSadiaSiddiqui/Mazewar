@@ -14,7 +14,7 @@ public class MazewarServerHandlerThread extends Thread {
 	}
 	
 	public void run() {
-		boolean gotDiePacket = false;
+		boolean gotServerError = false;
 		
 		try {
 			/* Stream to read from client */
@@ -40,10 +40,12 @@ public class MazewarServerHandlerThread extends Thread {
 						SharedData.CURR_PLAYERS_COUNT++;
 						
 					} else { // Report error
+						gotServerError = true;
 						packetToClient.type = MazewarPacket.SERVER_ERROR;
 						packetToClient.error_code = MazewarPacket.ERROR_MAX_PLAYER_CAPACITY_REACHED;
 					}
 				}
+				
 				toClient.writeObject(packetToClient);
 			}
 			
@@ -56,7 +58,12 @@ public class MazewarServerHandlerThread extends Thread {
 		} catch (ClassNotFoundException e) {
 			e.printStackTrace();
 		} catch(IOException e) {
-			e.printStackTrace();
+			
+			if(gotServerError) {
+				System.out.println("A player had to exit because of overpopulation");
+			} else {
+				e.printStackTrace();
+			}
 		}
 	}
 
