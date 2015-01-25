@@ -1,3 +1,4 @@
+import java.io.ObjectOutputStream;
 import java.net.Socket;
 import java.util.concurrent.BlockingQueue;
 
@@ -22,5 +23,10 @@ public class SharedData {
 	 * Array of sockets, each connected to a client (player)
 	 */
 	static Socket[] socks = new Socket[MAX_PLAYERS];
+	
+	/**
+	 * Array of output streams, each connected to a client (player)
+	 */
+	static ObjectOutputStream[] outAll = new ObjectOutputStream[MAX_PLAYERS];
 
 }

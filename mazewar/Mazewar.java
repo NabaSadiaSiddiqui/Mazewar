@@ -239,6 +239,9 @@ public class Mazewar extends JFrame {
                 setVisible(true);
                 overheadPanel.repaint();
                 this.requestFocusInWindow();
+                
+                //TODO: get remote clients from the server and add them to the maze
+                addRemoteClients(guiClient, maze);
         }
 
         
@@ -304,25 +307,33 @@ public class Mazewar extends JFrame {
 				System.err.println("ERROR: MazewarPacket class does not exist...uh oh");
 				System.exit(1);
 			}
-        	
-        	/*try {
-				
-				
-				
-				if(packetFromServer.type == MazewarPacket.SERVER_BROADCAST_PLAYERS) {
-					System.out.println("No error in adding a player");
-					BlockingQueue activePlayers = packetFromServer.activeClients;
-					System.out.println("Number of players is " + String.valueOf(activePlayers.size()));
-					System.out.println("They include " + ((PlayerMeta)activePlayers.remove()).name
-				} else  else {
-					System.out.println("Hmm...");
+        }
+        
+        private static void addRemoteClients(Client self, Maze maze) {        	
+        	try {				
+	        	/* Get remote clients */
+				MazewarPacket packetFromServer = (MazewarPacket) in.readObject();
+				while(packetFromServer.type != MazewarPacket.SERVER_BROADCAST_PLAYERS) { // Wait to get the players
+					packetFromServer = (MazewarPacket) in.readObject();
 				}
+				BlockingQueue activePlayers = packetFromServer.activeClients;
+				
+				for(int i=0; i<SharedData.MAX_PLAYERS; i++) {
+					PlayerMeta player = (PlayerMeta)activePlayers.remove();
+					String playerName = player.name;
+					if(!self.getName().equals(playerName)) {
+						RemoteClient client = new RemoteClient(playerName);
+						//TODO: set the position and orientation of the remote client
+                        maze.addClient(client);
+					}
+				}	
 			} catch (IOException e) {
-				System.err.println("ERROR: Could not read from input stream");
+				System.err.println("ERROR: Could not write to output stream");
 				System.exit(1);
 			} catch (ClassNotFoundException e) {
 				System.err.println("ERROR: MazewarPacket class does not exist...uh oh");
 				System.exit(1);
-			}*/
+			}	
         }
+
 }

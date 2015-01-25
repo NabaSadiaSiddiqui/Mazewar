@@ -36,6 +36,7 @@ public class MazewarServerHandlerThread extends Thread {
 					if(SharedData.players.size() < SharedData.MAX_PLAYERS) { // Add player to the queue if possible
 						SharedData.players.add(player);
 						SharedData.socks[SharedData.CURR_PLAYERS_COUNT] = socket;
+						SharedData.outAll[SharedData.CURR_PLAYERS_COUNT] = toClient;
 						SharedData.CURR_PLAYERS_COUNT++;
 						
 					} else { // Report error
