@@ -12,7 +12,7 @@ public class SharedData {
 	 */
 	static int CURR_PLAYERS_COUNT = 0;
 	
-	static BlockingQueue players;
+	static BlockingQueue<PlayerMeta> players;
 	
 	/**
 	 * Boolean to indicate if all players in the game have been introduced

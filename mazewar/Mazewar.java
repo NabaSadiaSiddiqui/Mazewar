@@ -174,12 +174,12 @@ public class Mazewar extends JFrame {
                 
                 // Use braces to force constructors not to be called at the beginning of the
                 // constructor.
-                {
+                /*{
                         maze.addClient(new RobotClient("Norby"));
                         maze.addClient(new RobotClient("Robbie"));
                         maze.addClient(new RobotClient("Clango"));
                         maze.addClient(new RobotClient("Marvin"));
-                }
+                }*/
 
                 
                 // Create the panel that will display the maze.
@@ -316,7 +316,7 @@ public class Mazewar extends JFrame {
 				while(packetFromServer.type != MazewarPacket.SERVER_BROADCAST_PLAYERS) { // Wait to get the players
 					packetFromServer = (MazewarPacket) in.readObject();
 				}
-				BlockingQueue activePlayers = packetFromServer.activeClients;
+				BlockingQueue<PlayerMeta> activePlayers = packetFromServer.activeClients;
 				
 				for(int i=0; i<SharedData.MAX_PLAYERS; i++) {
 					PlayerMeta player = (PlayerMeta)activePlayers.remove();

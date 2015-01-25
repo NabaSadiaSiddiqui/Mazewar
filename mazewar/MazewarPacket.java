@@ -64,7 +64,7 @@ public class MazewarPacket implements Serializable{
 	/*
 	 * An array of ALL players currently in the game
 	 */
-	public BlockingQueue activeClients;
+	public BlockingQueue<PlayerMeta> activeClients;
 	
 	/**
 	 * Information about a single client
