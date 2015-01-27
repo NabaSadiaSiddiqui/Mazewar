@@ -4,7 +4,6 @@ import java.io.ObjectOutputStream;
 import java.net.*;
 import java.util.Iterator;
 
-
 public class MazewarServerHandlerThread extends Thread {
 	private Socket socket = null;
 	
@@ -28,6 +27,7 @@ public class MazewarServerHandlerThread extends Thread {
 			while((packetFromClient = (MazewarPacket) fromClient.readObject()) != null) {
 				/* Create a packet to send reply back to client */
 				MazewarPacket packetToClient = new MazewarPacket();
+				packetToClient.type = MazewarPacket.SERVER_OK;
 				
 				/* process client request to get a mutually exclusive position on maze */
 				if(packetFromClient.type == MazewarPacket.CLIENT_JOIN) {
@@ -74,6 +74,20 @@ public class MazewarServerHandlerThread extends Thread {
 						packetToClient.error_code = MazewarPacket.ERROR_MAX_PLAYER_CAPACITY_REACHED;
 					}
 					toClient.writeObject(packetToClient);
+					continue;
+				}
+				
+				/* enqueue player's forward action */
+				if(packetFromClient.type == MazewarPacket.CLIENT_FORWARD) {
+					String player = packetFromClient.player;
+										
+					ActionInfo action = new ActionInfo(player, packetFromClient.type, ServerState.time);
+					
+					ServerState.actionQueue.add(action);
+					
+					// Send server response back to client and continue
+					toClient.writeObject(packetToClient);
+					
 					continue;
 				}
 				

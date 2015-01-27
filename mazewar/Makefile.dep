@@ -373,3 +373,4 @@ MazewarPlayerMeetAndGreetHandlerThread.class : ServerState.java
 MazewarPlayerMeetAndGreetHandlerThread.class : ServerState.class
 SharedData.class : SharedData.java
 ServerState.class : ServerState.java
+ClientState.class : ClientState.java

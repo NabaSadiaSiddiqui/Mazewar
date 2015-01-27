@@ -319,8 +319,7 @@ public class Mazewar extends JFrame {
         	        	packetFromServer = (MazewarPacket) in.readObject();
         			
         			} else if(packetFromServer.type == MazewarPacket.SERVER_ACK_JOIN) {
-    					
-        				System.out.println("Registered self with an available position. Lets add gui client there.");    					
+        				consolePrintLn("Successfully obtained a free spot to play");
     					gotAck = true;
     				
         			} else {
@@ -359,6 +358,9 @@ public class Mazewar extends JFrame {
 					System.exit(1);
 				}
 				
+				// Save self.name
+				ClientState.PLAYER_NAME = name;
+				consolePrintLn(name + ": registered successfully");
 			} catch (IOException e) {
 				System.err.println("ERROR: Could not write to output stream");
 				System.exit(1);
@@ -394,5 +396,50 @@ public class Mazewar extends JFrame {
 				System.err.println("ERROR: MazewarPacket class does not exist...uh oh");
 				System.exit(1);
 			}
+        }
+        
+        public static boolean forward() {
+        	/* Send action to server */
+        	MazewarPacket packetToServer = new MazewarPacket();
+        	packetToServer.type = MazewarPacket.CLIENT_FORWARD;
+        	packetToServer.player = ClientState.PLAYER_NAME;
+        	
+        	try {
+				out.writeObject(packetToServer);
+				
+	        	// Check everything is okay
+				MazewarPacket packetFromServer = (MazewarPacket) in.readObject();
+				if(packetFromServer.type == MazewarPacket.SERVER_OK) {
+					consolePrintLn(ClientState.PLAYER_NAME + ": sent action to server successfully");
+					return true;
+				} else if(packetFromServer.type == MazewarPacket.SERVER_ERROR) {
+					consolePrintLn(ClientState.PLAYER_NAME + ": error sending action to server");
+					return false;
+				}
+			} catch (IOException e) {
+				System.err.println("ERROR: Could not write to output stream");
+				System.exit(1);
+			} catch (ClassNotFoundException e) {
+				System.err.println("ERROR: MazewarPacket class does not exist...uh oh");
+				System.exit(1);
+			} finally {
+				return false;
+			}
+        }
+        
+        public static boolean backup() {
+        	return true;
+        }
+        
+        public static boolean turnLeft() {
+        	return true;
+        }
+        
+        public static boolean turnRight() {
+        	return true;
+        }
+        
+        public static boolean fire() {
+        	return true;
         }
 }
