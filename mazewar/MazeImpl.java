@@ -26,6 +26,7 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Random;
 import java.util.Vector;  
 import java.util.Map;
@@ -862,4 +863,100 @@ public class MazeImpl extends Maze implements Serializable, ClientListener, Runn
                 assert(o2 instanceof CellImpl);
                 return (CellImpl)o2;
         }
+        
+        /**
+         * Obtain the {@link Point} which is not already occupied by other
+         * clients (remote and local)
+         * @param occupiedCells All points on the {@link maze} which are filled
+         * @return An available {@link Point}
+         */
+        public Point getEmptyCell(ArrayList<Point> occupiedCells) {
+        	Point point = getFreePoint(occupiedCells);
+            
+            CellImpl cell = getCellImpl(point);
+            // Repeat until we find an empty cell
+            while(cell.getContents() != null) {
+                    point = getFreePoint(occupiedCells);
+                    cell = getCellImpl(point);
+            }
+            return point;
+        }
+        
+        /**
+         * Internal helper called to get an empty {@link Point}
+         */
+        private Point getFreePoint(ArrayList<Point> occupiedCells) {
+        	// Pick a random starting point, and check to see if it is already occupied
+            Point point = new Point(randomGen.nextInt(maxX),randomGen.nextInt(maxY));
+            
+            while(isOccupied(occupiedCells, point)) {
+                point = new Point(randomGen.nextInt(maxX),randomGen.nextInt(maxY));
+            }
+            
+            return point;
+        }
+        
+        /**
+    	 * Check if {@link Point} is already in the array occupiedCells
+    	 * @param occupiedCells The array of cells which are occupied by other players
+    	 * @param point A potentially empty {@link Point}
+    	 * @return true if {@link Point} is already taken, false otherwise
+    	 */
+    	private boolean isOccupied(ArrayList<Point> occupiedCells, Point point) {
+    		int x = point.getX();
+    		int y = point.getY();
+    		for(Point occupied : occupiedCells) {
+    			int xRef = occupied.getX();
+    			int yRef = occupied.getY();
+
+            	if(x==xRef && y==yRef) { // occupied == point
+            		return true;
+            	}
+            }
+    		return false;
+    	}
+    	
+    	/**
+         * Function for adding a {@link Client} to the {@link Maze}.
+         * @param client The {@link Client} to be added.
+         * @param point The location the {@link Client} should be added.
+         */
+        public synchronized void addClientAtPoint(Client client, Point point) {
+        	assert(client != null);
+        	assert(checkBounds(point));
+        	
+            CellImpl cell = getCellImpl(point);
+            Direction d = Direction.random();
+            while(cell.isWall(d)) {
+              d = Direction.random();
+            }
+            cell.setContents(client);
+            clientMap.put(client, new DirectedPoint(point, d));
+            client.registerMaze(this);
+            client.addClientListener(this);
+            update();
+            notifyClientAdd(client);
+        }
+        
+        /**
+         * Function for adding a {@link Client} to the {@link Maze}.
+         * @param client The {@link Client} to be added.
+         * @param point The location the {@link Client} should be added.
+         * @param direction The direction the {@link Client} should be facing
+         */
+        public synchronized void addClientAtPointWithDirection(Client client, Point point, Direction direction) {
+        	assert(client != null);
+        	assert(checkBounds(point));
+        	
+            CellImpl cell = getCellImpl(point);
+            Direction d = direction;
+            cell.setContents(client);
+            clientMap.put(client, new DirectedPoint(point, d));
+            client.registerMaze(this);
+            client.addClientListener(this);
+            update();
+            notifyClientAdd(client);
+        }
+        
+        
 }

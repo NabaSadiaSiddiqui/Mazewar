@@ -183,4 +183,24 @@ public class Direction {
                 /* Impossible */
                 return null;
         }
+        
+        /** 
+         * Produce a {@link Direction} representation from the String.
+         * @return This {@link String}'s {@link Direction} representation.
+         */
+        public static Direction strToDir(String dir) {
+        	if(dir.equals("North")) {
+        		return North;
+        	}
+        	if(dir.equals("East")) {
+        		return East;
+        	}
+        	if(dir.equals("South")) {
+        		return South;
+        	}
+        	if(dir.equals("West")) {
+        		return West;
+        	}
+        	return null;
+        }
 }

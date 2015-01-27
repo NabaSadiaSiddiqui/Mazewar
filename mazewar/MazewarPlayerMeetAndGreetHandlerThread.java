@@ -19,22 +19,22 @@ public class MazewarPlayerMeetAndGreetHandlerThread extends Thread {
 			}
 			
 			for(i=0; i<SharedData.MAX_PLAYERS; i++) {				
-				Socket socket = SharedData.socks[i];
+				Socket socket = ServerState.socks[i];
 				
 				/* Stream to write back to client */
-				ObjectOutputStream toClient = SharedData.outAll[i];
+				ObjectOutputStream toClient = ServerState.outAll[i];
 				
 				/* Create a packet for meet-and-greet all players */
 				MazewarPacket packetToClient = new MazewarPacket();
 				
-				if(!SharedData.PLAYERS_ADDED) {
+				if(!ServerState.PLAYERS_ADDED) {
 					packetToClient.type = MazewarPacket.SERVER_BROADCAST_PLAYERS;
-					packetToClient.activeClients = SharedData.players;
+					packetToClient.activeClients = ServerState.players;
 					
 					toClient.writeObject(packetToClient);
 					
 					if(i==SharedData.MAX_PLAYERS) {
-						SharedData.PLAYERS_ADDED = true;
+						ServerState.PLAYERS_ADDED = true;
 					}
 				}
 			}

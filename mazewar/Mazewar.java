@@ -33,6 +33,7 @@ import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.net.Socket;
 import java.net.UnknownHostException;
+import java.util.ArrayList;
 import java.util.concurrent.BlockingQueue;
 
 /**
@@ -161,16 +162,17 @@ public class Mazewar extends JFrame {
                 // here.
                 //TODO: put network initialization code here
                 initNetwork(hostname, port);
+                // Get a position that the client can occupy and register it with server
+                Point point = registerPositionWithServer(maze);
 
                 
                 // Create the GUIClient and connect it to the KeyListener queue
                 guiClient = new GUIClient(name);
-                maze.addClient(guiClient);
+                maze.addClientAtPoint(guiClient, point);
                 this.addKeyListener(guiClient);
                 
                 //TODO: register client with server
-                registerWithServer(guiClient);
-
+                registerSelfWithServer(guiClient, maze);
                 
                 // Use braces to force constructors not to be called at the beginning of the
                 // constructor.
@@ -280,20 +282,77 @@ public class Mazewar extends JFrame {
     		}
         }
         
-        private static void registerWithServer(Client client) {
+        /**
+         * Registers the position of the client with the server and returns it
+         * @param maze
+         * @return {@link Point} which the client can occupy on the maze
+         */
+        private static Point registerPositionWithServer(Maze maze) {        	
+        	ArrayList<Point> occupiedCells = new ArrayList<Point>();
+        	
+        	// Get an available cell
+        	Point position = maze.getEmptyCell(occupiedCells);
+        	
+        	/* Make a request to server with available position */
+        	MazewarPacket packetToServer = new MazewarPacket(); 
+        	packetToServer.type = MazewarPacket.CLIENT_JOIN;
+        	packetToServer.myPosition = position;
+        	
+        	try {
+        		out.writeObject(packetToServer);
+        		
+        		// Ensure that the position is available for occupancy
+        		boolean gotAck = false;
+        		MazewarPacket packetFromServer = (MazewarPacket) in.readObject();
+        		while(!gotAck) {
+        			if(packetFromServer.type == MazewarPacket.SERVER_NACK_JOIN) {
+        	        	
+        				occupiedCells.add(position);
+        				position = maze.getEmptyCell(occupiedCells);
+        				
+        				packetToServer = new MazewarPacket();
+        				packetToServer.type = MazewarPacket.CLIENT_JOIN;
+        	        	packetToServer.myPosition = position;
+        	        	
+        	        	out.writeObject(packetToServer);
+        	        	
+        	        	packetFromServer = (MazewarPacket) in.readObject();
+        			
+        			} else if(packetFromServer.type == MazewarPacket.SERVER_ACK_JOIN) {
+    					
+        				System.out.println("Registered self with an available position. Lets add gui client there.");    					
+    					gotAck = true;
+    				
+        			} else {
+    					System.out.println("ERROR: We just got an alien packet. It goes by the code " + String.valueOf(packetFromServer.type));
+    				}
+        		}
+        	} catch (IOException e) {
+				System.err.println("ERROR: Could not write to output stream");
+				System.exit(1);
+			} catch (ClassNotFoundException e) {
+				System.err.println("ERROR: MazewarPacket class does not exist...uh oh");
+				System.exit(1);
+			}
+        	
+        	return position;
+        }
+        
+        private static void registerSelfWithServer(Client client, Maze maze) {
+        	        	
         	String name = client.getName();
         	Point location = client.getPoint();
         	String orientation = client.getOrientation().toString();
         	
         	/* Make a request to register */
         	MazewarPacket packetToServer = new MazewarPacket();
-        	packetToServer.type = MazewarPacket.CLIENT_JOIN;
+        	packetToServer.type = MazewarPacket.CLIENT_REGISTER;
         	packetToServer.playerInfo = new PlayerMeta(name, location.getX(), location.getY(), orientation);
         	
         	try {
 				out.writeObject(packetToServer);
 				
-	        	/* Check registration passed */
+	        	// Check registration passed 
 				MazewarPacket packetFromServer = (MazewarPacket) in.readObject();
 				if(packetFromServer.type == MazewarPacket.SERVER_ERROR) {
 					System.err.println("ERROR: There are already too many players in the game");
@@ -323,8 +382,9 @@ public class Mazewar extends JFrame {
 					String playerName = player.name;
 					if(!self.getName().equals(playerName)) {
 						RemoteClient client = new RemoteClient(playerName);
-						//TODO: set the position and orientation of the remote client
-                        maze.addClient(client);
+						Point point = new Point(player.posX, player.posY);
+						Direction direction = Direction.strToDir(player.orientation);
+						maze.addClientAtPointWithDirection((Client) client, point, direction);
 					}
 				}	
 			} catch (IOException e) {
@@ -333,7 +393,6 @@ public class Mazewar extends JFrame {
 			} catch (ClassNotFoundException e) {
 				System.err.println("ERROR: MazewarPacket class does not exist...uh oh");
 				System.exit(1);
-			}	
+			}
         }
-
 }

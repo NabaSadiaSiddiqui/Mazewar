@@ -2,6 +2,7 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.*;
+import java.util.Iterator;
 
 
 public class MazewarServerHandlerThread extends Thread {
@@ -27,16 +28,44 @@ public class MazewarServerHandlerThread extends Thread {
 			while((packetFromClient = (MazewarPacket) fromClient.readObject()) != null) {
 				/* Create a packet to send reply back to client */
 				MazewarPacket packetToClient = new MazewarPacket();
-				packetToClient.type = MazewarPacket.SERVER_OK;
+				
+				/* process client request to get a mutually exclusive position on maze */
+				if(packetFromClient.type == MazewarPacket.CLIENT_JOIN) {
+					Point position = packetFromClient.myPosition;
+					int x = position.getX();
+					int y = position.getY();
+
+					boolean cellBusy = false;
+					
+					Iterator allPoints = ServerState.occupiedCells.iterator();
+					while(allPoints.hasNext() && !cellBusy) {
+						Point ref = (Point) allPoints.next();
+						int xRef = ref.getX();
+						int yRef = ref.getY();
+						
+						if(xRef == x && yRef == y) {
+							packetToClient.type = MazewarPacket.SERVER_NACK_JOIN;
+							cellBusy = true;
+						}
+					}
+					
+					if(!cellBusy) {
+						ServerState.occupiedCells.add(position);
+						packetToClient.type = MazewarPacket.SERVER_ACK_JOIN;
+					}
+					toClient.writeObject(packetToClient);
+					continue;
+				}
+				
 				
 				/* process registration */
-				if(packetFromClient.type == MazewarPacket.CLIENT_JOIN) {
+				if(packetFromClient.type == MazewarPacket.CLIENT_REGISTER) {
 					PlayerMeta player = packetFromClient.playerInfo;
 					
-					if(SharedData.players.size() < SharedData.MAX_PLAYERS) { // Add player to the queue if possible
-						SharedData.players.add(player);
-						SharedData.socks[SharedData.CURR_PLAYERS_COUNT] = socket;
-						SharedData.outAll[SharedData.CURR_PLAYERS_COUNT] = toClient;
+					if(ServerState.players.size() < SharedData.MAX_PLAYERS) { // Add player to the queue if possible
+						ServerState.players.add(player);
+						ServerState.socks[SharedData.CURR_PLAYERS_COUNT] = socket;
+						ServerState.outAll[SharedData.CURR_PLAYERS_COUNT] = toClient;
 						SharedData.CURR_PLAYERS_COUNT++;
 						
 					} else { // Report error
@@ -44,9 +73,10 @@ public class MazewarServerHandlerThread extends Thread {
 						packetToClient.type = MazewarPacket.SERVER_ERROR;
 						packetToClient.error_code = MazewarPacket.ERROR_MAX_PLAYER_CAPACITY_REACHED;
 					}
+					toClient.writeObject(packetToClient);
+					continue;
 				}
 				
-				toClient.writeObject(packetToClient);
 			}
 			
 			/**

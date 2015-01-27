@@ -35,14 +35,19 @@ public class MazewarPacket implements Serializable{
 	 * Constants
 	 */
 	public static final int CLIENT_NULL = 0;
-	public static final int CLIENT_MOVE = 101;
-	public static final int CLIENT_EXIT = 102;
-	public static final int CLIENT_DIE = 103;
-
-	public static final int CLIENT_JOIN = 104;
-	
+	// Client request to join the game
+	public static final int CLIENT_JOIN = 101;
+	// Client request to register with server
+	public static final int CLIENT_REGISTER = 102;
+	// Server ack code to player wanting to join the game
+	public static final int SERVER_ACK_JOIN = 103;
+	// Server nack code to player wanting to join the game
+	public static final int SERVER_NACK_JOIN = 104;
+	// Server code everything went okay on our side
 	public static final int SERVER_OK = 105;
+	// Server response to clients with all players in the game
 	public static final int SERVER_BROADCAST_PLAYERS = 106;
+	// Server code that something is amiss...check error code
 	public static final int SERVER_ERROR = 107;
 	
 	
@@ -70,4 +75,9 @@ public class MazewarPacket implements Serializable{
 	 * Information about a single client
 	 */
 	public PlayerMeta playerInfo;
+	
+	/**
+	 * The coordinates at which player wants to start the game from
+	 */
+	public Point myPosition;
 }

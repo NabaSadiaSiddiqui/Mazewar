@@ -1,7 +1,13 @@
 import java.io.ObjectOutputStream;
 import java.net.Socket;
+import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 
+/**
+ * 
+ * @author siddi224
+ * Data shared between client and server
+ */
 public class SharedData {
 	
 	static int MAX_PLAYERS = 2;
@@ -11,22 +17,4 @@ public class SharedData {
 	 * CURR_PLAYERS_COUNT <= MAX_PLAYERS
 	 */
 	static int CURR_PLAYERS_COUNT = 0;
-	
-	static BlockingQueue<PlayerMeta> players;
-	
-	/**
-	 * Boolean to indicate if all players in the game have been introduced
-	 */
-	static boolean PLAYERS_ADDED = false;
-	
-	/**
-	 * Array of sockets, each connected to a client (player)
-	 */
-	static Socket[] socks = new Socket[MAX_PLAYERS];
-	
-	/**
-	 * Array of output streams, each connected to a client (player)
-	 */
-	static ObjectOutputStream[] outAll = new ObjectOutputStream[MAX_PLAYERS];
-
 }

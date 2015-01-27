@@ -17,6 +17,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307,
 USA.
 */
   
+import java.util.ArrayList;
 import java.util.Iterator;
 
 /**
@@ -115,5 +116,27 @@ public abstract class Maze {
      * @param ml An object implementing the {@link MazeListener} interface.
      */
     public abstract void removeMazeListener(MazeListener ml);
+    
+    /**
+     * Get an available point on the maze
+     * @param occupiedCells All unavailable points on the maze
+     * @return {@link Point} which is empty and available
+     */
+    public abstract Point getEmptyCell(ArrayList<Point> occupiedCells);
+    
+    /** 
+     * Add a {@link Client} at point {@link Point} in the {@link Maze}. 
+     * @param client {@link Client} to be added to the {@link Maze}
+     * @param point {@link Point} at which to add the {@link Client}.
+     */
+    public abstract void addClientAtPoint(Client client, Point point);
+    
+    /** 
+     * Add a {@link Client} at point {@link Point} in the {@link Maze}. 
+     * @param client {@link Client} to be added to the {@link Maze}
+     * @param point {@link Point} at which to add the {@link Client}.
+     * @param direction {@link Direction} which the client will be facing
+     */
+    public abstract void addClientAtPointWithDirection(Client client, Point point, Direction direction);
     
 }

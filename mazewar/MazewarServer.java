@@ -9,7 +9,7 @@ public class MazewarServer {
 		/**
 		 * Create a concurrent array to hold up to 4 players in the game
 		 */
-		SharedData.players = new ArrayBlockingQueue<PlayerMeta>(SharedData.MAX_PLAYERS);
+		ServerState.players = new ArrayBlockingQueue<PlayerMeta>(SharedData.MAX_PLAYERS);
 		
 		ServerSocket serverSocket = null;
 		boolean listening = true;
