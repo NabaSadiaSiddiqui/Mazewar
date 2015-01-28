@@ -1,3 +1,5 @@
+import java.util.HashMap;
+
 
 public class ClientState {
 
@@ -11,4 +13,6 @@ public class ClientState {
 	
 	//public static int PLAYER_ACTION;
 	public static String PLAYER_NAME;
+	
+	public static HashMap<String, Client> playersInGame = new HashMap<String, Client>();
 }

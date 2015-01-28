@@ -364,6 +364,9 @@ public class Mazewar extends JFrame {
 				// Save self.name
 				ClientState.PLAYER_NAME = name;
 				consolePrintLn(name + ": registered successfully");
+				
+				// Add guiClient to hashmap of ALL playrs in the game
+				ClientState.playersInGame.put(ClientState.PLAYER_NAME, client);
 			} catch (IOException e) {
 				System.err.println("ERROR: Could not write to output stream");
 				System.exit(1);
@@ -390,6 +393,9 @@ public class Mazewar extends JFrame {
 						Point point = new Point(player.posX, player.posY);
 						Direction direction = Direction.strToDir(player.orientation);
 						maze.addClientAtPointWithDirection((Client) client, point, direction);
+					
+						// Add remote client to hashmap of ALL playrs in the game
+						ClientState.playersInGame.put(client.getName(), client);
 					}
 				}	
 			} catch (IOException e) {
@@ -504,30 +510,38 @@ public class Mazewar extends JFrame {
     				int playerAction = playerMove.getAction();
     				int playerTime = playerMove.getTime();
     				
+    				Client player = ClientState.playersInGame.get(playerName);
+    				
     				switch(playerAction) {
     					case MazewarPacket.CLIENT_FORWARD:
     						consolePrintLn("Received packet: " + playerMove.toString());
     						consolePrintLn("Action: forward");
+    						player.forward();
     						break;
     					case MazewarPacket.CLIENT_BACKWARD:
     						consolePrintLn("Received packet: " + playerMove.toString());
     						consolePrintLn("Action: backward");
+    						player.backup();
     						break;
     					case MazewarPacket.CLIENT_LEFT:
     						consolePrintLn("Received packet: " + playerMove.toString());
     						consolePrintLn("Action: left");
+    						player.turnLeft();
     						break;
     					case MazewarPacket.CLIENT_RIGHT:
     						consolePrintLn("Received packet: " + playerMove.toString());
     						consolePrintLn("Action: right");
+    						player.turnRight();
     						break;
     					case MazewarPacket.CLIENT_FIRE:
     						consolePrintLn("Received packet: " + playerMove.toString());
     						consolePrintLn("Action: fire");
+    						player.fire();
     						break;
     					case MazewarPacket.CLIENT_QUIT:
     						consolePrintLn("Received packet: " + playerMove.toString());
     						consolePrintLn("Action: quit");
+    						quit();
     						break;
         				default:
         					consolePrintLn("Should we have gotten here?");
