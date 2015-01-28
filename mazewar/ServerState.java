@@ -4,23 +4,6 @@ import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
-/**
- * Serializing data to store in the queue of actions
- * @author siddi224
- *
- */
-class ActionInfo {
-	private String name;
-	private int action;
-	private int time;	// logical time of when the action was performed
-	
-	public ActionInfo(String name, int action, int time) {
-		this.name = name;
-		this.action = action;
-		this.time = time;
-	}
-}
-
 public class ServerState {
 	
 	/**
@@ -52,7 +35,7 @@ public class ServerState {
 	 * Queue of actions to broadcast by server
 	 * Use LinkedBlockingQueue instead of, say ArrayBlockingQueue, because we do not need to specify a capacity!
 	 */
-	static BlockingQueue<ActionInfo> actionQueue = new LinkedBlockingQueue<ActionInfo>();
+	static BlockingQueue<SharedData.ActionInfo> actionQueue = new LinkedBlockingQueue<SharedData.ActionInfo>();
 	
 	/**
 	 * Logical time of the server

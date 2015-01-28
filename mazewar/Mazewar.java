@@ -244,6 +244,9 @@ public class Mazewar extends JFrame {
                 
                 //TODO: get remote clients from the server and add them to the maze
                 addRemoteClients(guiClient, maze);
+                
+                //Listen for server broadcasts
+                attachBroadcastListener();
         }
 
         
@@ -401,45 +404,147 @@ public class Mazewar extends JFrame {
         public static boolean forward() {
         	/* Send action to server */
         	MazewarPacket packetToServer = new MazewarPacket();
-        	packetToServer.type = MazewarPacket.CLIENT_FORWARD;
+        	packetToServer.type = MazewarPacket.CLIENT_ACTION;
         	packetToServer.player = ClientState.PLAYER_NAME;
+        	packetToServer.action = MazewarPacket.CLIENT_FORWARD;
         	
         	try {
 				out.writeObject(packetToServer);
-				
-	        	// Check everything is okay
-				MazewarPacket packetFromServer = (MazewarPacket) in.readObject();
-				if(packetFromServer.type == MazewarPacket.SERVER_OK) {
-					consolePrintLn(ClientState.PLAYER_NAME + ": sent action to server successfully");
-					return true;
-				} else if(packetFromServer.type == MazewarPacket.SERVER_ERROR) {
-					consolePrintLn(ClientState.PLAYER_NAME + ": error sending action to server");
-					return false;
-				}
+				consolePrintLn(ClientState.PLAYER_NAME + ": sent action to move forward to server successfully");
+			} catch (IOException e) {
+				System.err.println("ERROR: Could not write to output stream");
+				System.exit(1);
+			}
+        	
+        	return false;
+        }
+        
+        public static boolean backup() {
+        	/* Send action to server */
+        	MazewarPacket packetToServer = new MazewarPacket();
+        	packetToServer.type = MazewarPacket.CLIENT_ACTION;
+        	packetToServer.player = ClientState.PLAYER_NAME;
+        	packetToServer.action = MazewarPacket.CLIENT_BACKWARD;
+        	
+        	try {
+				out.writeObject(packetToServer);
+				consolePrintLn(ClientState.PLAYER_NAME + ": sent action to move backward to server successfully");
+			} catch (IOException e) {
+				System.err.println("ERROR: Could not write to output stream");
+				System.exit(1);
+			}
+        	
+        	return false;
+        }
+        
+        public static boolean turnLeft() {
+        	/* Send action to server */
+        	MazewarPacket packetToServer = new MazewarPacket();
+        	packetToServer.type = MazewarPacket.CLIENT_ACTION;
+        	packetToServer.player = ClientState.PLAYER_NAME;
+        	packetToServer.action = MazewarPacket.CLIENT_LEFT;
+        	
+        	try {
+				out.writeObject(packetToServer);
+				consolePrintLn(ClientState.PLAYER_NAME + ": sent action to turn left to server successfully");
+			} catch (IOException e) {
+				System.err.println("ERROR: Could not write to output stream");
+				System.exit(1);
+			}
+        	
+        	return false;
+        }
+        
+        public static boolean turnRight() {
+        	/* Send action to server */
+        	MazewarPacket packetToServer = new MazewarPacket();
+        	packetToServer.type = MazewarPacket.CLIENT_ACTION;
+        	packetToServer.player = ClientState.PLAYER_NAME;
+        	packetToServer.action = MazewarPacket.CLIENT_RIGHT;
+        	
+        	try {
+				out.writeObject(packetToServer);			
+				consolePrintLn(ClientState.PLAYER_NAME + ": sent action to turn right to server successfully");
+			} catch (IOException e) {
+				System.err.println("ERROR: Could not write to output stream");
+				System.exit(1);
+			}
+        	
+        	return false;
+        }
+        
+        public static boolean fire() {
+        	/* Send action to server */
+        	MazewarPacket packetToServer = new MazewarPacket();
+        	packetToServer.type = MazewarPacket.CLIENT_ACTION;
+        	packetToServer.player = ClientState.PLAYER_NAME;
+        	packetToServer.action = MazewarPacket.CLIENT_FIRE;
+        	
+        	try {
+				out.writeObject(packetToServer);
+				consolePrintLn(ClientState.PLAYER_NAME + ": sent action to fire to server successfully");
+			} catch (IOException e) {
+				System.err.println("ERROR: Could not write to output stream");
+				System.exit(1);
+			}
+        	
+        	return false;
+        }
+        
+        private void attachBroadcastListener() {
+        	try {				
+	        	/* Get moves */
+        		MazewarPacket packetFromServer = (MazewarPacket) in.readObject();
+        		while(packetFromServer != null) {
+    				while(packetFromServer.type != MazewarPacket.SERVER_BROADCAST_MOVE) { // Wait to get the player actions
+    					packetFromServer = (MazewarPacket) in.readObject();
+    				}
+    				SharedData.ActionInfo playerMove = packetFromServer.move;
+    				String playerName = playerMove.getPlayerName();
+    				int playerAction = playerMove.getAction();
+    				int playerTime = playerMove.getTime();
+    				
+    				switch(playerAction) {
+    					case MazewarPacket.CLIENT_FORWARD:
+    						consolePrintLn("Received packet: " + playerMove.toString());
+    						consolePrintLn("Action: forward");
+    						break;
+    					case MazewarPacket.CLIENT_BACKWARD:
+    						consolePrintLn("Received packet: " + playerMove.toString());
+    						consolePrintLn("Action: backward");
+    						break;
+    					case MazewarPacket.CLIENT_LEFT:
+    						consolePrintLn("Received packet: " + playerMove.toString());
+    						consolePrintLn("Action: left");
+    						break;
+    					case MazewarPacket.CLIENT_RIGHT:
+    						consolePrintLn("Received packet: " + playerMove.toString());
+    						consolePrintLn("Action: right");
+    						break;
+    					case MazewarPacket.CLIENT_FIRE:
+    						consolePrintLn("Received packet: " + playerMove.toString());
+    						consolePrintLn("Action: fire");
+    						break;
+    					case MazewarPacket.CLIENT_QUIT:
+    						consolePrintLn("Received packet: " + playerMove.toString());
+    						consolePrintLn("Action: quit");
+    						break;
+        				default:
+        					consolePrintLn("Should we have gotten here?");
+        					break;
+    				}
+    				
+    				//consolePrintLn("Received packet: " + playerMove.toString());
+    				
+        			packetFromServer = (MazewarPacket) in.readObject();
+
+        		}
 			} catch (IOException e) {
 				System.err.println("ERROR: Could not write to output stream");
 				System.exit(1);
 			} catch (ClassNotFoundException e) {
 				System.err.println("ERROR: MazewarPacket class does not exist...uh oh");
 				System.exit(1);
-			} finally {
-				return false;
 			}
-        }
-        
-        public static boolean backup() {
-        	return true;
-        }
-        
-        public static boolean turnLeft() {
-        	return true;
-        }
-        
-        public static boolean turnRight() {
-        	return true;
-        }
-        
-        public static boolean fire() {
-        	return true;
         }
 }

@@ -18,6 +18,7 @@ public class MazewarPlayerMeetAndGreetHandlerThread extends Thread {
 				MazewarPlayerMeetAndGreetHandlerThread.sleep(1000);
 			}
 			
+			// broadcast all players
 			for(i=0; i<SharedData.MAX_PLAYERS; i++) {				
 				Socket socket = ServerState.socks[i];
 				
@@ -36,6 +37,33 @@ public class MazewarPlayerMeetAndGreetHandlerThread extends Thread {
 					if(i==SharedData.MAX_PLAYERS) {
 						ServerState.PLAYERS_ADDED = true;
 					}
+				}
+			}
+			
+			while(true) {
+				while(ServerState.actionQueue.isEmpty()) {	// wait for an action to be received by a player
+					MazewarPlayerMeetAndGreetHandlerThread.sleep(1000);
+				}
+				
+				SharedData.ActionInfo action = ServerState.actionQueue.take();
+								
+				// broadcast moves to players
+				for(i=0; i<SharedData.MAX_PLAYERS; i++) {				
+					Socket socket = ServerState.socks[i];
+					
+					// Stream to write back to client 
+					ObjectOutputStream toClient = ServerState.outAll[i];
+					
+					// Create a packet to send actions in the queue 
+					MazewarPacket packetToClient = new MazewarPacket();
+					packetToClient.type = MazewarPacket.SERVER_BROADCAST_MOVE;
+					
+					
+					//TODO: send all information to all players
+					packetToClient.move = action;
+					//packetToClient.player = action.getPlayerName() + String.valueOf(action.getTime());
+	
+					toClient.writeObject(packetToClient);
 				}
 			}
 		} catch(IOException e) {

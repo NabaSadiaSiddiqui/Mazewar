@@ -77,16 +77,17 @@ public class MazewarServerHandlerThread extends Thread {
 					continue;
 				}
 				
-				/* enqueue player's forward action */
-				if(packetFromClient.type == MazewarPacket.CLIENT_FORWARD) {
-					String player = packetFromClient.player;
+				/* enqueue player's action */
+				if(packetFromClient.type == MazewarPacket.CLIENT_ACTION) {
+					String playerName = packetFromClient.player;
+					int playerAction = packetFromClient.action;
 										
-					ActionInfo action = new ActionInfo(player, packetFromClient.type, ServerState.time);
+					SharedData.ActionInfo action = new SharedData.ActionInfo(playerName, playerAction, ServerState.time);
 					
 					ServerState.actionQueue.add(action);
 					
-					// Send server response back to client and continue
-					toClient.writeObject(packetToClient);
+					// increment logical time
+					ServerState.time++;
 					
 					continue;
 				}

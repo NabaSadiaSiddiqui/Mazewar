@@ -1,6 +1,7 @@
 
 public class ClientState {
 
+	// Client moves correspond to values in MazewarPacket
 	/*public static int ACTION_FORWARD = 1;
 	public static int ACTION_BACKWARD = 2;
 	public static int ACTION_LEFT = 3;
@@ -10,5 +11,4 @@ public class ClientState {
 	
 	//public static int PLAYER_ACTION;
 	public static String PLAYER_NAME;
-	
 }
