@@ -42,4 +42,9 @@ public class ServerState {
 	 */
 	static int time;
 	
+	/**
+	 * Variable to indicate the state of the game (in-progress vs. ended)
+	 */
+	static boolean playing = true;
+	
 }

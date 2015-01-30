@@ -243,10 +243,10 @@ public class Mazewar extends JFrame {
                 this.requestFocusInWindow();
                 
                 //TODO: get remote clients from the server and add them to the maze
-                addRemoteClients(guiClient, maze);
+                //addRemoteClients(guiClient, maze);
                 
                 //Listen for server broadcasts
-                attachBroadcastListener();
+                attachBroadcastListener(guiClient, maze);
         }
 
         
@@ -346,7 +346,7 @@ public class Mazewar extends JFrame {
         	Point location = client.getPoint();
         	String orientation = client.getOrientation().toString();
         	
-        	/* Make a request to register */
+        	// Make a request to register
         	MazewarPacket packetToServer = new MazewarPacket();
         	packetToServer.type = MazewarPacket.CLIENT_REGISTER;
         	packetToServer.playerInfo = new PlayerMeta(name, location.getX(), location.getY(), orientation);
@@ -365,7 +365,7 @@ public class Mazewar extends JFrame {
 				ClientState.PLAYER_NAME = name;
 				consolePrintLn(name + ": registered successfully");
 				
-				// Add guiClient to hashmap of ALL playrs in the game
+				// Add guiClient to hash map of ALL players in the game
 				ClientState.playersInGame.put(ClientState.PLAYER_NAME, client);
 			} catch (IOException e) {
 				System.err.println("ERROR: Could not write to output stream");
@@ -376,34 +376,21 @@ public class Mazewar extends JFrame {
 			}
         }
         
-        private static void addRemoteClients(Client self, Maze maze) {      	
-        	try {				
-	        	/* Get remote clients */
-				MazewarPacket packetFromServer = (MazewarPacket) in.readObject();
-				while(packetFromServer.type != MazewarPacket.SERVER_BROADCAST_PLAYERS) { // Wait to get the players
-					packetFromServer = (MazewarPacket) in.readObject();
-				}
-				BlockingQueue<PlayerMeta> activePlayers = packetFromServer.activeClients;
+        private static void addRemoteClients(Client self, Maze maze, MazewarPacket packetFromServer) {
+			BlockingQueue<PlayerMeta> activePlayers = packetFromServer.activeClients;
+			
+			for(int i=0; i<SharedData.MAX_PLAYERS; i++) {
+				PlayerMeta player = (PlayerMeta)activePlayers.remove();
+				String playerName = player.name;
+				if(!self.getName().equals(playerName)) {
+					RemoteClient client = new RemoteClient(playerName);
+					Point point = new Point(player.posX, player.posY);
+					Direction direction = Direction.strToDir(player.orientation);
+					maze.addClientAtPointWithDirection((Client) client, point, direction);
 				
-				for(int i=0; i<SharedData.MAX_PLAYERS; i++) {
-					PlayerMeta player = (PlayerMeta)activePlayers.remove();
-					String playerName = player.name;
-					if(!self.getName().equals(playerName)) {
-						RemoteClient client = new RemoteClient(playerName);
-						Point point = new Point(player.posX, player.posY);
-						Direction direction = Direction.strToDir(player.orientation);
-						maze.addClientAtPointWithDirection((Client) client, point, direction);
-					
-						// Add remote client to hashmap of ALL playrs in the game
-						ClientState.playersInGame.put(client.getName(), client);
-					}
-				}	
-			} catch (IOException e) {
-				System.err.println("ERROR: Could not write to output stream");
-				System.exit(1);
-			} catch (ClassNotFoundException e) {
-				System.err.println("ERROR: MazewarPacket class does not exist...uh oh");
-				System.exit(1);
+					// Add remote client to hashmap of ALL playrs in the game
+					ClientState.playersInGame.put(client.getName(), client);
+				}
 			}
         }
         
@@ -497,61 +484,26 @@ public class Mazewar extends JFrame {
         	return false;
         }
         
-        private void attachBroadcastListener() {
+        private void attachBroadcastListener(Client self, Maze maze) {
         	try {				
 	        	/* Get moves */
         		MazewarPacket packetFromServer = (MazewarPacket) in.readObject();
         		while(packetFromServer != null) {
-    				while(packetFromServer.type != MazewarPacket.SERVER_BROADCAST_MOVE) { // Wait to get the player actions
-    					packetFromServer = (MazewarPacket) in.readObject();
-    				}
-    				SharedData.ActionInfo playerMove = packetFromServer.move;
-    				String playerName = playerMove.getPlayerName();
-    				int playerAction = playerMove.getAction();
-    				int playerTime = playerMove.getTime();
-    				
-    				Client player = ClientState.playersInGame.get(playerName);
-    				
-    				switch(playerAction) {
-    					case MazewarPacket.CLIENT_FORWARD:
-    						consolePrintLn("Received packet: " + playerMove.toString());
-    						consolePrintLn("Action: forward");
-    						player.forward();
-    						break;
-    					case MazewarPacket.CLIENT_BACKWARD:
-    						consolePrintLn("Received packet: " + playerMove.toString());
-    						consolePrintLn("Action: backward");
-    						player.backup();
-    						break;
-    					case MazewarPacket.CLIENT_LEFT:
-    						consolePrintLn("Received packet: " + playerMove.toString());
-    						consolePrintLn("Action: left");
-    						player.turnLeft();
-    						break;
-    					case MazewarPacket.CLIENT_RIGHT:
-    						consolePrintLn("Received packet: " + playerMove.toString());
-    						consolePrintLn("Action: right");
-    						player.turnRight();
-    						break;
-    					case MazewarPacket.CLIENT_FIRE:
-    						consolePrintLn("Received packet: " + playerMove.toString());
-    						consolePrintLn("Action: fire");
-    						player.fire();
-    						break;
-    					case MazewarPacket.CLIENT_QUIT:
-    						consolePrintLn("Received packet: " + playerMove.toString());
-    						consolePrintLn("Action: quit");
-    						quit();
-    						break;
+        			
+        			int type = packetFromServer.type;
+        			
+        			switch(type) {
+		    			case MazewarPacket.SERVER_BROADCAST_PLAYERS:
+		    				addRemoteClients(self, maze, packetFromServer);
+		    				break;
+		    			case MazewarPacket.SERVER_BROADCAST_MOVE:
+		    				checkAction(packetFromServer);
+		    				break;
         				default:
-        					consolePrintLn("Should we have gotten here?");
         					break;
-    				}
-    				
-    				//consolePrintLn("Received packet: " + playerMove.toString());
+        			}
     				
         			packetFromServer = (MazewarPacket) in.readObject();
-
         		}
 			} catch (IOException e) {
 				System.err.println("ERROR: Could not write to output stream");
@@ -560,5 +512,51 @@ public class Mazewar extends JFrame {
 				System.err.println("ERROR: MazewarPacket class does not exist...uh oh");
 				System.exit(1);
 			}
+        }
+        
+        private void checkAction(MazewarPacket packetFromServer) {
+			SharedData.ActionInfo playerMove = packetFromServer.move;
+			String playerName = playerMove.getPlayerName();
+			int playerAction = playerMove.getAction();
+			int playerTime = playerMove.getTime();
+			
+			Client player = ClientState.playersInGame.get(playerName);
+			
+			switch(playerAction) {
+				case MazewarPacket.CLIENT_FORWARD:
+					consolePrintLn("Received packet: " + playerMove.toString());
+					consolePrintLn("Action: forward");
+					player.forward();
+					break;
+				case MazewarPacket.CLIENT_BACKWARD:
+					consolePrintLn("Received packet: " + playerMove.toString());
+					consolePrintLn("Action: backward");
+					player.backup();
+					break;
+				case MazewarPacket.CLIENT_LEFT:
+					consolePrintLn("Received packet: " + playerMove.toString());
+					consolePrintLn("Action: left");
+					player.turnLeft();
+					break;
+				case MazewarPacket.CLIENT_RIGHT:
+					consolePrintLn("Received packet: " + playerMove.toString());
+					consolePrintLn("Action: right");
+					player.turnRight();
+					break;
+				case MazewarPacket.CLIENT_FIRE:
+					consolePrintLn("Received packet: " + playerMove.toString());
+					consolePrintLn("Action: fire");
+					player.fire();
+					break;
+				case MazewarPacket.CLIENT_QUIT:
+					consolePrintLn("Received packet: " + playerMove.toString());
+					consolePrintLn("Action: quit");
+					quit();
+					break;
+				default:
+					consolePrintLn("Should we have gotten here?");
+					break;
+			}
+		
         }
 }

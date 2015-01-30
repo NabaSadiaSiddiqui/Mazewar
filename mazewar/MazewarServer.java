@@ -26,7 +26,7 @@ public class MazewarServer {
 			System.exit(-1);
 		}
 		
-		new MazewarPlayerMeetAndGreetHandlerThread().start();
+		new MazewarServerBroadcastThread().start();
 				
 		while(listening) {
 			try {

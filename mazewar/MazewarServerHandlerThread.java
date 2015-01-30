@@ -74,6 +74,10 @@ public class MazewarServerHandlerThread extends Thread {
 						packetToClient.error_code = MazewarPacket.ERROR_MAX_PLAYER_CAPACITY_REACHED;
 					}
 					toClient.writeObject(packetToClient);
+					
+					if(SharedData.MAX_PLAYERS == SharedData.CURR_PLAYERS_COUNT) {
+						introducePlayers();
+					}
 					continue;
 				}
 				
@@ -108,6 +112,38 @@ public class MazewarServerHandlerThread extends Thread {
 				System.out.println("A player had to exit because of overpopulation");
 			} else {
 				e.printStackTrace();
+			}
+		}
+	}
+	
+	private void introducePlayers() {
+		// broadcast all players
+		for(int i=0; i<SharedData.MAX_PLAYERS; i++) {
+			
+			if(SharedData.MAX_PLAYERS != SharedData.CURR_PLAYERS_COUNT) {
+				break;
+			}
+			Socket socket = ServerState.socks[i];
+			
+			// Stream to write back to client 
+			ObjectOutputStream toClient = ServerState.outAll[i];
+			
+			// Create a packet for meet-and-greet all players 
+			MazewarPacket packetToClient = new MazewarPacket();
+			
+			if(!ServerState.PLAYERS_ADDED) {
+				packetToClient.type = MazewarPacket.SERVER_BROADCAST_PLAYERS;
+				packetToClient.activeClients = ServerState.players;
+				
+				try {
+					toClient.writeObject(packetToClient);
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+				
+				if(i==SharedData.MAX_PLAYERS) {
+					ServerState.PLAYERS_ADDED = true;
+				}
 			}
 		}
 	}
