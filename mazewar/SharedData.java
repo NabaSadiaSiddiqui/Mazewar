@@ -27,7 +27,7 @@ public class SharedData {
 		private int action;
 		private int time;	// logical time of when the action was performed
 		
-		private PlayerMeta respawn = null;	// used for respawning clients
+		private PlayerMeta respawnPlayerInfo = null;	// used for respawning clients
 		
 		public ActionInfo(String name, int action, int time) {
 			this.name = name;
@@ -35,11 +35,11 @@ public class SharedData {
 			this.time = time;
 		}
 		
-		public ActionInfo(String name, int action, int time, PlayerMeta respawn) {
+		public ActionInfo(String name, int action, int time, PlayerMeta respawnPlayerInfo) {
 			this.name = name;
 			this.action = action;
 			this.time = time;
-			this.respawn = respawn;
+			this.respawnPlayerInfo = respawnPlayerInfo;
 		}
 		
 		/**
@@ -58,7 +58,7 @@ public class SharedData {
 		}
 		
 		public PlayerMeta getPlayerMeta() {
-			return respawn;
+			return respawnPlayerInfo;
 		}
 		
 		/**

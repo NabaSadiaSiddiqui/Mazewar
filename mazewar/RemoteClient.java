@@ -1,3 +1,5 @@
+import java.util.Iterator;
+
 /*
 Copyright (C) 2004 Geoffrey Alan Washburn
    
@@ -38,7 +40,25 @@ public class RemoteClient extends Client {
          */
         
         @Override
-        protected void respawn(Point point, Direction d) {
+        protected void respawn(String name, Point point, Direction d) {
         	Mazewar.consolePrintLn("Respawn remote client");
+        	Mazewar.consolePrintLn("Name of the remote client is " + name);
+        
+        	Iterator clients = Mazewar.maze.getClients();
+        	Client target = null;
+        	while(clients.hasNext()) {
+        		target = (Client) clients.next();
+        		if(target.getName().equals(name))
+        			break;
+        	}
+        	if(target == null) {
+        		Mazewar.consolePrintLn("target is null");
+        	} else {
+        		Mazewar.consolePrintLn("target is NOT null");
+        	}
+        	
+        	//RemoteClient client = new RemoteClient(name);
+        	Mazewar.maze.addClientAtPointWithDirection(target, point, d);
+        	//ClientState.playersInGame.put(name, client);
         }
 }

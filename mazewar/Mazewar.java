@@ -76,12 +76,12 @@ public class Mazewar extends JFrame {
         /**
          * The {@link Maze} that the game uses.
          */
-        private Maze maze = null;
+        public static Maze maze = null;
 
         /**
          * The {@link GUIClient} for the game.
          */
-        private GUIClient guiClient = null;
+        public static GUIClient guiClient = null;
 
         /**
          * The panel that displays the {@link Maze}.
@@ -171,6 +171,8 @@ public class Mazewar extends JFrame {
                 maze.addClientAtPoint(guiClient, point);
                 this.addKeyListener(guiClient);
                 
+                //ClientState.PLAYER = guiClient;
+                                
                 //TODO: register client with server
                 registerSelfWithServer(guiClient, maze);
                 
@@ -389,7 +391,7 @@ public class Mazewar extends JFrame {
 					Direction direction = Direction.strToDir(player.orientation);
 					maze.addClientAtPointWithDirection((Client) client, point, direction);
 				
-					// Add remote client to hashmap of ALL playrs in the game
+					// Add remote client to hashmap of ALL players in the game
 					ClientState.playersInGame.put(client.getName(), client);
 				}
 			}
@@ -574,8 +576,8 @@ public class Mazewar extends JFrame {
 					consolePrintLn("Received packet: " + playerMove.toString());
 					consolePrintLn("Action: respawn");
 					PlayerMeta addPlayer = playerMove.getPlayerMeta();
-					consolePrintLn("Add player at x, y positions of " + addPlayer.posX + " " + addPlayer.posY);	
-					player.respawn(new Point(addPlayer.posX, addPlayer.posY), Direction.strToDir(addPlayer.orientation));
+					consolePrintLn("Add player " + addPlayer.name + " at x, y positions of " + addPlayer.posX + " " + addPlayer.posY);	
+					player.respawn(addPlayer.name, new Point(addPlayer.posX, addPlayer.posY), Direction.strToDir(addPlayer.orientation));
 					break;
 				case MazewarPacket.CLIENT_QUIT:
 					consolePrintLn("Received packet: " + playerMove.toString());

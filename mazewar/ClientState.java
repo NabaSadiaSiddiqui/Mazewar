@@ -3,6 +3,8 @@ import java.util.HashMap;
 
 public class ClientState {
 
+	//public static GUIClient PLAYER;
+	
 	public static String PLAYER_NAME;
 	
 	public static Point PLAYER_POINT;

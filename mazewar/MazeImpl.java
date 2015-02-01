@@ -457,16 +457,24 @@ public class MazeImpl extends Maze implements Serializable, ClientListener, Runn
                 
                // update();
                 
+                Object o = clientMap.get(target);
+                assert(o instanceof Point);
+                Point point = (Point)o;
+                CellImpl cell = getCellImpl(point);
+                cell.setContents(null);
+                
+                update();
+                
                 if(ClientState.isSelf(target)) {	//GUIClient
                 	
                     // Pick a random starting point, and check to see if it is already occupied
-                    Point point = new Point(randomGen.nextInt(maxX),randomGen.nextInt(maxY));
+                    point = new Point(randomGen.nextInt(maxX),randomGen.nextInt(maxY));
                     
                     while(ClientState.isCurrPosition(point)) {
                         point = new Point(randomGen.nextInt(maxX),randomGen.nextInt(maxY));
                     }
                     
-                    CellImpl cell = getCellImpl(point);
+                    cell = getCellImpl(point);
                     // Repeat until we find an empty cell
                     while(cell.getContents() != null) {
                             point = new Point(randomGen.nextInt(maxX),randomGen.nextInt(maxY));

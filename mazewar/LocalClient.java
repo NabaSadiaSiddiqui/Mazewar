@@ -44,7 +44,12 @@ public abstract class LocalClient extends Client {
          */
         
         @Override
-        protected void respawn(Point point, Direction d) {
+        protected void respawn(String name, Point point, Direction d) {
+        	assert(name.equals(ClientState.PLAYER_NAME));
         	Mazewar.consolePrintLn("Respawn local client");
+        	Mazewar.guiClient = new GUIClient(name);
+        	Mazewar.maze.addClientAtPointWithDirection(Mazewar.guiClient, point, d);
+        	//ClientState.playersInGame.put(name, Mazewar.guiClient);
+			//ClientState.playersInGame.put(ClientState.PLAYER_NAME, Mazewar.guiClient);
         }
 }

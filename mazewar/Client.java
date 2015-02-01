@@ -232,7 +232,7 @@ public abstract class Client {
                 } 
         }
         
-        protected void respawn(Point point, Direction d) {
+        protected void respawn(String name, Point point, Direction d) {
         	Mazewar.consolePrintLn("Respawn client");
         }
         
