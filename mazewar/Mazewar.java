@@ -361,8 +361,9 @@ public class Mazewar extends JFrame {
 					System.exit(1);
 				}
 				
-				// Save self.name
+				// Save self state
 				ClientState.PLAYER_NAME = name;
+				ClientState.PLAYER_POINT = location;
 				consolePrintLn(name + ": registered successfully");
 				
 				// Add guiClient to hash map of ALL players in the game
@@ -484,6 +485,27 @@ public class Mazewar extends JFrame {
         	return false;
         }
         
+        public static boolean respawn(Point point, Direction d) {
+        	/* Send action to server */
+        	MazewarPacket packetToServer = new MazewarPacket();
+        	packetToServer.type = MazewarPacket.CLIENT_ACTION;
+        	packetToServer.player = ClientState.PLAYER_NAME;
+        	packetToServer.action = MazewarPacket.CLIENT_RESPAWN;
+        	
+        	packetToServer.playerInfo = new PlayerMeta(ClientState.PLAYER_NAME, point.getX(), point.getY(), d.toString());
+        	
+        	
+        	try {
+				out.writeObject(packetToServer);
+				consolePrintLn(ClientState.PLAYER_NAME + ": sent action to respawn to server successfully");
+			} catch (IOException e) {
+				System.err.println("ERROR: Could not write to output stream");
+				System.exit(1);
+			}
+        	
+        	return false;
+        }
+        
         private void attachBroadcastListener(Client self, Maze maze) {
         	try {				
 	        	/* Get moves */
@@ -547,6 +569,13 @@ public class Mazewar extends JFrame {
 					consolePrintLn("Received packet: " + playerMove.toString());
 					consolePrintLn("Action: fire");
 					player.fire();
+					break;
+				case MazewarPacket.CLIENT_RESPAWN:
+					consolePrintLn("Received packet: " + playerMove.toString());
+					consolePrintLn("Action: respawn");
+					PlayerMeta addPlayer = playerMove.getPlayerMeta();
+					consolePrintLn("Add player at x, y positions of " + addPlayer.posX + " " + addPlayer.posY);	
+					player.respawn(new Point(addPlayer.posX, addPlayer.posY), Direction.strToDir(addPlayer.orientation));
 					break;
 				case MazewarPacket.CLIENT_QUIT:
 					consolePrintLn("Received packet: " + playerMove.toString());

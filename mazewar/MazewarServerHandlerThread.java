@@ -85,8 +85,15 @@ public class MazewarServerHandlerThread extends Thread {
 				if(packetFromClient.type == MazewarPacket.CLIENT_ACTION) {
 					String playerName = packetFromClient.player;
 					int playerAction = packetFromClient.action;
-										
-					SharedData.ActionInfo action = new SharedData.ActionInfo(playerName, playerAction, ServerState.time);
+					int seq = ServerState.time;
+					
+					SharedData.ActionInfo action;
+					
+					if(playerAction == MazewarPacket.CLIENT_RESPAWN) {
+						action = new SharedData.ActionInfo(playerName, playerAction, seq, packetFromClient.playerInfo);
+					} else {
+						action = new SharedData.ActionInfo(playerName, playerAction, seq);
+					}
 					
 					ServerState.actionQueue.add(action);
 					

@@ -232,4 +232,8 @@ public abstract class Client {
                 } 
         }
         
+        protected void respawn(Point point, Direction d) {
+        	Mazewar.consolePrintLn("Respawn client");
+        }
+        
 }

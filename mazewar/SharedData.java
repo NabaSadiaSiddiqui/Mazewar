@@ -27,10 +27,19 @@ public class SharedData {
 		private int action;
 		private int time;	// logical time of when the action was performed
 		
+		private PlayerMeta respawn = null;	// used for respawning clients
+		
 		public ActionInfo(String name, int action, int time) {
 			this.name = name;
 			this.action = action;
 			this.time = time;
+		}
+		
+		public ActionInfo(String name, int action, int time, PlayerMeta respawn) {
+			this.name = name;
+			this.action = action;
+			this.time = time;
+			this.respawn = respawn;
 		}
 		
 		/**
@@ -46,6 +55,10 @@ public class SharedData {
 		
 		public int getTime() {
 			return time;
+		}
+		
+		public PlayerMeta getPlayerMeta() {
+			return respawn;
 		}
 		
 		/**

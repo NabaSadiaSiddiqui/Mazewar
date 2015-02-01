@@ -42,4 +42,9 @@ public abstract class LocalClient extends Client {
         /**
          * Fill in here??
          */
+        
+        @Override
+        protected void respawn(Point point, Direction d) {
+        	Mazewar.consolePrintLn("Respawn local client");
+        }
 }

@@ -447,27 +447,48 @@ public class MazeImpl extends Maze implements Serializable, ClientListener, Runn
                 assert(target != null);
                 Mazewar.consolePrintLn(source.getName() + " just vaporized " + 
                                 target.getName());
-                Object o = clientMap.remove(target);
-                assert(o instanceof Point);
-                Point point = (Point)o;
-                CellImpl cell = getCellImpl(point);
-                cell.setContents(null);
-                // Pick a random starting point, and check to see if it is already occupied
-                point = new Point(randomGen.nextInt(maxX),randomGen.nextInt(maxY));
-                cell = getCellImpl(point);
-                // Repeat until we find an empty cell
-                while(cell.getContents() != null) {
+                
+                
+//                Object o = clientMap.remove(target);
+//                assert(o instanceof Point);
+//                Point point = (Point)o;
+//                CellImpl cell = getCellImpl(point);
+//                cell.setContents(null);
+                
+               // update();
+                
+                if(ClientState.isSelf(target)) {	//GUIClient
+                	
+                    // Pick a random starting point, and check to see if it is already occupied
+                    Point point = new Point(randomGen.nextInt(maxX),randomGen.nextInt(maxY));
+                    
+                    while(ClientState.isCurrPosition(point)) {
                         point = new Point(randomGen.nextInt(maxX),randomGen.nextInt(maxY));
-                        cell = getCellImpl(point);
+                    }
+                    
+                    CellImpl cell = getCellImpl(point);
+                    // Repeat until we find an empty cell
+                    while(cell.getContents() != null) {
+                            point = new Point(randomGen.nextInt(maxX),randomGen.nextInt(maxY));
+                            cell = getCellImpl(point);
+                    }
+                    Direction d = Direction.random();
+                    while(cell.isWall(d)) {
+                            d = Direction.random();
+                    }
+                    
+                    //cell.setContents(target);
+                    //clientMap.put(target, new DirectedPoint(point, d));
+                    //update();
+                    //notifyClientKilled(source, target);
+                	
+                	
+                	
+                    Mazewar.respawn(point, d);
                 }
-                Direction d = Direction.random();
-                while(cell.isWall(d)) {
-                        d = Direction.random();
-                }
-                cell.setContents(target);
-                clientMap.put(target, new DirectedPoint(point, d));
-                update();
-                notifyClientKilled(source, target);
+                
+                
+
         }
         
         /**

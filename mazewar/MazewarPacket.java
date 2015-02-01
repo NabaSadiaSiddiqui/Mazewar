@@ -92,8 +92,10 @@ public class MazewarPacket implements Serializable{
 	public static final int CLIENT_RIGHT = 107;
 	// Client request to fire
 	public static final int CLIENT_FIRE = 108;
+	// Client request to respawn
+	public static final int CLIENT_RESPAWN = 109;
 	// Client request to quit game
-	public static final int CLIENT_QUIT = 109;
+	public static final int CLIENT_QUIT = 110;
 	
 	// Server ack code to player wanting to join the game
 	public static final int SERVER_ACK_JOIN = 201;

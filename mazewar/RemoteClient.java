@@ -35,5 +35,10 @@ public class RemoteClient extends Client {
 
         /**
          * May want to fill in code here.
-         */ 
+         */
+        
+        @Override
+        protected void respawn(Point point, Direction d) {
+        	Mazewar.consolePrintLn("Respawn remote client");
+        }
 }

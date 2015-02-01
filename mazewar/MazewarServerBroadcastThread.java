@@ -34,6 +34,11 @@ public class MazewarServerBroadcastThread extends Thread {
 					packetToClient.type = MazewarPacket.SERVER_BROADCAST_MOVE;
 					
 					packetToClient.move = action;
+					
+					PlayerMeta addPlayer = action.getPlayerMeta();
+					if(addPlayer!=null) {
+						packetToClient.playerInfo = addPlayer;
+					}
 	
 					toClient.writeObject(packetToClient);
 				}
