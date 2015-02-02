@@ -34,6 +34,7 @@ import java.io.Serializable;
 import java.net.Socket;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.concurrent.BlockingQueue;
 
 /**
@@ -170,9 +171,7 @@ public class Mazewar extends JFrame {
                 guiClient = new GUIClient(name);
                 maze.addClientAtPoint(guiClient, point);
                 this.addKeyListener(guiClient);
-                
-                //ClientState.PLAYER = guiClient;
-                                
+                                                
                 //TODO: register client with server
                 registerSelfWithServer(guiClient, maze);
                 
@@ -243,9 +242,6 @@ public class Mazewar extends JFrame {
                 setVisible(true);
                 overheadPanel.repaint();
                 this.requestFocusInWindow();
-                
-                //TODO: get remote clients from the server and add them to the maze
-                //addRemoteClients(guiClient, maze);
                 
                 //Listen for server broadcasts
                 attachBroadcastListener(guiClient, maze);
@@ -367,9 +363,6 @@ public class Mazewar extends JFrame {
 				ClientState.PLAYER_NAME = name;
 				ClientState.PLAYER_POINT = location;
 				consolePrintLn(name + ": registered successfully");
-				
-				// Add guiClient to hash map of ALL players in the game
-				ClientState.playersInGame.put(ClientState.PLAYER_NAME, client);
 			} catch (IOException e) {
 				System.err.println("ERROR: Could not write to output stream");
 				System.exit(1);
@@ -390,9 +383,6 @@ public class Mazewar extends JFrame {
 					Point point = new Point(player.posX, player.posY);
 					Direction direction = Direction.strToDir(player.orientation);
 					maze.addClientAtPointWithDirection((Client) client, point, direction);
-				
-					// Add remote client to hashmap of ALL players in the game
-					ClientState.playersInGame.put(client.getName(), client);
 				}
 			}
         }
@@ -544,7 +534,17 @@ public class Mazewar extends JFrame {
 			int playerAction = playerMove.getAction();
 			int playerTime = playerMove.getTime();
 			
-			Client player = ClientState.playersInGame.get(playerName);
+			//Client player = ClientState.playersInGame.get(playerName);
+			
+			Iterator allClients = Mazewar.maze.getClients();
+			Client player = null;
+			while(allClients.hasNext()) {
+				player = (Client) allClients.next();
+				
+				if(player.getName().equals(playerName))
+					break;
+			}
+			
 			
 			switch(playerAction) {
 				case MazewarPacket.CLIENT_FORWARD:

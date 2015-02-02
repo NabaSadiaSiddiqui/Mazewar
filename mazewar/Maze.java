@@ -36,7 +36,7 @@ public abstract class Maze {
      * @return A {@link Point} where the method <code>getX</code> returns the maximum X 
      * coordintate, and the method <code>getY</code> returns the maximum Y coordinate. 
      */
-    public abstract Point getSize(); 
+    public abstract Point getSize();
 
     /**
      * Check whether a {@link Point} is within the bounds of the {@link Maze}. 

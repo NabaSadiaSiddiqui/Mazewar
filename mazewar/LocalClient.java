@@ -49,7 +49,5 @@ public abstract class LocalClient extends Client {
         	Mazewar.consolePrintLn("Respawn local client");
         	Mazewar.guiClient = new GUIClient(name);
         	Mazewar.maze.addClientAtPointWithDirection(Mazewar.guiClient, point, d);
-        	//ClientState.playersInGame.put(name, Mazewar.guiClient);
-			//ClientState.playersInGame.put(ClientState.PLAYER_NAME, Mazewar.guiClient);
         }
 }
