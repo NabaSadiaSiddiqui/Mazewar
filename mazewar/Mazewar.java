@@ -511,6 +511,7 @@ public class Mazewar extends JFrame {
 		    				addRemoteClients(self, maze, packetFromServer);
 		    				break;
 		    			case MazewarPacket.SERVER_BROADCAST_MOVE:
+		    				enqueueAction(packetFromServer);
 		    				checkAction(packetFromServer);
 		    				break;
         				default:
@@ -529,13 +530,16 @@ public class Mazewar extends JFrame {
         }
         
         private void checkAction(MazewarPacket packetFromServer) {
-			SharedData.ActionInfo playerMove = packetFromServer.move;
+			//SharedData.ActionInfo playerMove = packetFromServer.move;
+			SharedData.ActionInfo playerMove = ClientState.actionQueue.get(String.valueOf(ClientState.CURR_TIME));
+        	if(playerMove == null) {
+        		return;
+        	}
+			ClientState.CURR_TIME++;
 			String playerName = playerMove.getPlayerName();
 			int playerAction = playerMove.getAction();
-			int playerTime = playerMove.getTime();
-			
-			//Client player = ClientState.playersInGame.get(playerName);
-			
+			//int playerTime = playerMove.getTime();
+						
 			Iterator allClients = Mazewar.maze.getClients();
 			Client player = null;
 			while(allClients.hasNext()) {
@@ -589,5 +593,14 @@ public class Mazewar extends JFrame {
 					break;
 			}
 		
+        }
+        
+        private void enqueueAction(MazewarPacket packetFromServer) {
+        	SharedData.ActionInfo playerMove = packetFromServer.move;
+			String playerName = playerMove.getPlayerName();
+			int playerAction = playerMove.getAction();
+			int playerTime = playerMove.getTime();
+						
+			ClientState.actionQueue.put(String.valueOf(playerTime), playerMove);				
         }
 }

@@ -1,7 +1,13 @@
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.LinkedBlockingQueue;
 
 
 public class ClientState {
+	
+	public static int CURR_TIME = 0;
 	
 	public static String PLAYER_NAME;
 	
@@ -20,4 +26,25 @@ public class ClientState {
 		
 		return xRef == xCurr && yRef == yCurr;
 	}
+	
+	/**
+	 * Map of actions performed by the different players in the game
+	 * Key is the logical time it was performed at
+	 */
+	static ConcurrentHashMap<String, SharedData.ActionInfo> actionQueue = new ConcurrentHashMap<String, SharedData.ActionInfo>();
+
+//	public static SharedData.ActionInfo getValidMove() {
+//		SharedData.ActionInfo playerMove = null;
+//		
+//		Iterator allMoves = actionQueue.iterator();
+//		while(allMoves.hasNext()) {
+//			playerMove = (SharedData.ActionInfo) allMoves.next();
+//			
+//			if(playerMove.getTime() == CURR_TIME)
+//				break;
+//		}
+//		
+//		return playerMove;
+//		
+//	}
 }
