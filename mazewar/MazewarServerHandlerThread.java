@@ -2,7 +2,9 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.*;
+import java.util.Enumeration;
 import java.util.Iterator;
+import java.util.concurrent.BlockingQueue;
 
 public class MazewarServerHandlerThread extends Thread {
 	private Socket socket = null;
@@ -15,6 +17,7 @@ public class MazewarServerHandlerThread extends Thread {
 	
 	public void run() {
 		boolean gotServerError = false;
+		boolean gotQuitPacket = false;
 		
 		try {
 			/* Stream to read from client */
@@ -24,7 +27,7 @@ public class MazewarServerHandlerThread extends Thread {
 			/* Stream to write back to client */
 			ObjectOutputStream toClient = new ObjectOutputStream(socket.getOutputStream());
 				
-			while((packetFromClient = (MazewarPacket) fromClient.readObject()) != null) {
+			while(!gotQuitPacket && (packetFromClient = (MazewarPacket) fromClient.readObject()) != null) {
 				/* Create a packet to send reply back to client */
 				MazewarPacket packetToClient = new MazewarPacket();
 				packetToClient.type = MazewarPacket.SERVER_OK;
@@ -64,8 +67,8 @@ public class MazewarServerHandlerThread extends Thread {
 					
 					if(ServerState.players.size() < SharedData.MAX_PLAYERS) { // Add player to the queue if possible
 						ServerState.players.add(player);
-						ServerState.socks[SharedData.CURR_PLAYERS_COUNT] = socket;
-						ServerState.outAll[SharedData.CURR_PLAYERS_COUNT] = toClient;
+						ServerState.outAll.put(player.name, toClient);
+						
 						SharedData.CURR_PLAYERS_COUNT++;
 						
 					} else { // Report error
@@ -93,6 +96,33 @@ public class MazewarServerHandlerThread extends Thread {
 						action = new SharedData.ActionInfo(playerName, playerAction, seq, packetFromClient.playerInfo);
 					} else {
 						action = new SharedData.ActionInfo(playerName, playerAction, seq);
+					
+						if(playerAction == MazewarPacket.CLIENT_QUIT) {
+							// Remove player from BlockingQueue<PlayerMeta> players
+							Iterator players = ServerState.players.iterator();
+							PlayerMeta target = null;
+							Point point = null;
+							while(players.hasNext()) {
+								PlayerMeta tmp = (PlayerMeta) players.next();
+								if(tmp.name.equals(playerName)) {
+									target = tmp;
+									point = new Point(tmp.posX, tmp.posY);
+									break;
+								}
+							}
+							ServerState.players.remove(target);
+							
+							// Remove output stream from outAll
+							ServerState.outAll.remove(playerName);
+							
+							// Remove point from occupiedCells
+							ServerState.occupiedCells.remove(point);
+							
+							// Decrement CURR_PLAYER_COUNT
+							SharedData.CURR_PLAYERS_COUNT--;
+							
+							gotQuitPacket = true;
+						}
 					}
 					
 					ServerState.actionQueue.add(action);
@@ -124,17 +154,18 @@ public class MazewarServerHandlerThread extends Thread {
 	}
 	
 	private void introducePlayers() {
+		Enumeration<String> oStreamsKeys = ServerState.outAll.keys();
+		
 		// broadcast all players
 		for(int i=0; i<SharedData.MAX_PLAYERS; i++) {
 			
 			if(SharedData.MAX_PLAYERS != SharedData.CURR_PLAYERS_COUNT) {
 				break;
 			}
-			Socket socket = ServerState.socks[i];
 			
 			// Stream to write back to client 
-			ObjectOutputStream toClient = ServerState.outAll[i];
-			
+			ObjectOutputStream toClient = ServerState.outAll.get(oStreamsKeys.nextElement());
+					
 			// Create a packet for meet-and-greet all players 
 			MazewarPacket packetToClient = new MazewarPacket();
 			

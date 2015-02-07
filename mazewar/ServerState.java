@@ -2,6 +2,7 @@ import java.io.ObjectOutputStream;
 import java.net.Socket;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.LinkedBlockingQueue;
 
 public class ServerState {
@@ -17,20 +18,15 @@ public class ServerState {
 	static boolean PLAYERS_ADDED = false;
 	
 	/**
-	 * Array of sockets, each connected to a client (player)
-	 */
-	static Socket[] socks = new Socket[SharedData.MAX_PLAYERS];
-	
-	/**
 	 * Array of output streams, each connected to a client (player)
 	 */
-	static ObjectOutputStream[] outAll = new ObjectOutputStream[SharedData.MAX_PLAYERS];
-	
+	static ConcurrentHashMap<String, ObjectOutputStream> outAll = new ConcurrentHashMap<String, ObjectOutputStream>();
+
 	/**
 	 * Array of points occupied by player(s)
 	 */
-	static BlockingQueue<Point> occupiedCells = new ArrayBlockingQueue<Point>(SharedData.MAX_PLAYERS);
-
+	static BlockingQueue<Point> occupiedCells = new ArrayBlockingQueue<Point>(SharedData.MAX_PLAYERS);	
+	
 	/**
 	 * Queue of actions to broadcast by server
 	 * Use LinkedBlockingQueue instead of, say ArrayBlockingQueue, because we do not need to specify a capacity!
