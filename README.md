@@ -1,6 +1,8 @@
 # Mazewar  
   
-Team Members: Naba Sadia Siddiqui (998072945), Sameer Patel (998352526)  
+Team Members:  
+* Naba Sadia Siddiqui (998072945)  
+* Sameer Patel (998352526)  
   
 Steps to run the game:  
 1. Run 'Make'  
