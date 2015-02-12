@@ -191,10 +191,26 @@ public class ScoreTableModel implements TableModel, MazeListener {
 
         public void clientAdded(Client client) {
                 assert(client != null);
-                ScoreWrapper s = new ScoreWrapper(client);  
+                ScoreWrapper s = new ScoreWrapper(client);
+                
+                Object o = clientMap.get(client);
+                Integer score = ClientState.scoreMap.get(client.getName());
+                if( score != null) {	// adjust score for respawned clients
+                    if(o!=null) {
+                    	assert(o instanceof ScoreWrapper);
+                    	scoreSet.remove(o);
+                    	//s = (ScoreWrapper)o;
+                    }
+                    s.adjustScore(score.intValue());
+                    clientMap.remove(client);
+                }
+                
                 scoreSet.add(s);
+                
                 clientMap.put(client, s);
-                notifyListeners();
+                notifyListeners(); 
+
+                
         } 
         
         public void clientFired(Client client) {
@@ -205,6 +221,7 @@ public class ScoreTableModel implements TableModel, MazeListener {
                 ScoreWrapper s = (ScoreWrapper)o;
                 s.adjustScore(scoreAdjFire);
                 scoreSet.add(s);
+                ClientState.scoreMap.put(client.getName(), s.score);
                 notifyListeners();
         }
         
@@ -217,12 +234,14 @@ public class ScoreTableModel implements TableModel, MazeListener {
                 ScoreWrapper s = (ScoreWrapper)o;
                 s.adjustScore(scoreAdjKill);
                 scoreSet.add(s);
+                ClientState.scoreMap.put(source.getName(), s.score);
                 o = clientMap.get(target);
                 assert(o instanceof ScoreWrapper);
                 scoreSet.remove(o);
                 s = (ScoreWrapper)o;
                 s.adjustScore(scoreAdjKilled);
                 scoreSet.add(s);
+                ClientState.scoreMap.put(target.getName(), s.score);
                 notifyListeners();
         } 
 

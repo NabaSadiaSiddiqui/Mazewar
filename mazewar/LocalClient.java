@@ -50,15 +50,15 @@ public abstract class LocalClient extends Client {
         	assert(name.equals(ClientState.PLAYER_NAME));
         	Mazewar.consolePrintLn("Respawn local client");
         	
-        	Iterator clients = Mazewar.maze.getClients();
+        	/*Iterator clients = Mazewar.maze.getClients();
         	Client target = null;
         	while(clients.hasNext()) {
         		target = (Client) clients.next();
-        		if(target.getName().equals(name)) {
-        			//Mazewar.maze.removeClient(target);
+        		if(target.getName().equals(ClientState.PLAYER_NAME)) {
+        			Mazewar.maze.removeClient(target);
         			break;
         		}
-        	}
+        	}*/
         	
 			//target = new RemoteClient(name);        	
         	

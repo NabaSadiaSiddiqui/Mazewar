@@ -47,4 +47,6 @@ public class ClientState {
 //		return playerMove;
 //		
 //	}
+	
+	static ConcurrentHashMap<String, Integer> scoreMap = new ConcurrentHashMap<String, Integer>();
 }
