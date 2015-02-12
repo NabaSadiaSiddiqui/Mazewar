@@ -1,3 +1,5 @@
+import java.util.Iterator;
+
 /*
 Copyright (C) 2004 Geoffrey Alan Washburn
     
@@ -47,7 +49,20 @@ public abstract class LocalClient extends Client {
         protected void respawn(String name, Point point, Direction d) {
         	assert(name.equals(ClientState.PLAYER_NAME));
         	Mazewar.consolePrintLn("Respawn local client");
-        	Mazewar.guiClient = new GUIClient(name);
+        	
+        	Iterator clients = Mazewar.maze.getClients();
+        	Client target = null;
+        	while(clients.hasNext()) {
+        		target = (Client) clients.next();
+        		if(target.getName().equals(name)) {
+        			//Mazewar.maze.removeClient(target);
+        			break;
+        		}
+        	}
+        	
+			//target = new RemoteClient(name);        	
+        	
+        	//Mazewar.guiClient = new GUIClient(name);
         	Mazewar.maze.addClientAtPointWithDirection(Mazewar.guiClient, point, d);
         }
 }

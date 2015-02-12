@@ -47,9 +47,13 @@ public class RemoteClient extends Client {
         	Client target = null;
         	while(clients.hasNext()) {
         		target = (Client) clients.next();
-        		if(target.getName().equals(name))
+        		if(target.getName().equals(name)) {
+        			Mazewar.maze.removeClient(target);
         			break;
+        		}
         	}
+        	
+			target = new RemoteClient(name);
         	
         	Mazewar.maze.addClientAtPointWithDirection(target, point, d);
         }
