@@ -457,6 +457,8 @@ public class MazeImpl extends Maze implements Serializable, ClientListener, Runn
                 
                // update();
                 
+                notifyClientKilled(source, target);
+                
                 Object o = clientMap.get(target);
                 assert(o instanceof Point);
                 Point point = (Point)o;
