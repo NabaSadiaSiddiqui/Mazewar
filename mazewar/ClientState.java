@@ -1,11 +1,20 @@
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.net.Socket;
+import java.net.UnknownHostException;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.LinkedBlockingQueue;
 
 
 public class ClientState {
+	
+	public static String hostname = "localhost";
+	public static int port;
 	
 	public static int CURR_TIME = 0;
 	
@@ -15,6 +24,10 @@ public class ClientState {
 	
 	public static boolean isSelf(Client client) {
 		return client.getName().equals(PLAYER_NAME);
+	}
+	
+	public static boolean isSelfLocation(String hostname, int port) {
+		return hostname.equals(ClientState.hostname) && port == ClientState.port;
 	}
 	
 	public static boolean isCurrPosition(Point curr) {
@@ -32,21 +45,52 @@ public class ClientState {
 	 * Key is the logical time it was performed at
 	 */
 	static ConcurrentHashMap<String, SharedData.ActionInfo> actionQueue = new ConcurrentHashMap<String, SharedData.ActionInfo>();
-
-//	public static SharedData.ActionInfo getValidMove() {
-//		SharedData.ActionInfo playerMove = null;
-//		
-//		Iterator allMoves = actionQueue.iterator();
-//		while(allMoves.hasNext()) {
-//			playerMove = (SharedData.ActionInfo) allMoves.next();
-//			
-//			if(playerMove.getTime() == CURR_TIME)
-//				break;
-//		}
-//		
-//		return playerMove;
-//		
-//	}
 	
 	static ConcurrentHashMap<String, Integer> scoreMap = new ConcurrentHashMap<String, Integer>();
+
+	/**
+	 * Queue of all other players in the game and their location
+	 */
+	static BlockingQueue<ClientLocation> others = new ArrayBlockingQueue<ClientLocation>(SharedData.MAX_PLAYERS-1);
+
+	static class ClientLocation {
+		private static String hostname;
+		private static int port;
+		
+		/**
+		 * Socket for communication with the client
+		 */
+		private static Socket socket = null;
+		/**
+		 * Data structures to read/write to/from out/in stream
+		 */
+		private static ObjectOutputStream out = null;
+		private static ObjectInputStream in = null;
+		
+		public ClientLocation(String hostname, int port) {
+			this.hostname = hostname;
+			this.port = port;
+			
+			try {
+				socket = new Socket(hostname, port);
+				out = new ObjectOutputStream(socket.getOutputStream());
+				in = new ObjectInputStream(socket.getInputStream());
+			} catch (UnknownHostException e) {
+    			System.err.println("ERROR: Don't know where to connect!");
+				e.printStackTrace();
+			} catch (IOException e) {
+    			System.err.println("ERROR: Coudn't get I/O for the connection");
+				e.printStackTrace();
+			}
+		}
+		
+		public ObjectOutputStream getOut() {
+			return out;
+		}
+		
+		public ObjectInputStream getIn() {
+			return in;
+		}
+	}
+	
 }

@@ -1,5 +1,6 @@
 import java.io.Serializable;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Inline class to describe a client on the maze
@@ -10,15 +11,19 @@ class PlayerMeta implements Serializable {
 	public int posX;
 	public int posY;
 	public String orientation;
+	public String hostname;
+	public int port;
 	
 	/**
 	 * Constructor
 	 */
-	public PlayerMeta(String name, int posX, int posY, String orientation) {
+	public PlayerMeta(String name, int posX, int posY, String orientation, String hostname, int port) {
 		this.name = name;
 		this.posX = posX;
 		this.posY = posY;
 		this.orientation = orientation;
+		this.hostname = hostname;
+		this.port = port;
 	}
 	
 	/**
@@ -28,47 +33,6 @@ class PlayerMeta implements Serializable {
 		return " Remote client is " + name + ", at x-position of " + posX + " and y-position of " + posY + ", facing " + orientation;
 	}
 }
-
-/**
- * Inline class to describe the action performed by a player
- * Used by the server's broadcast thread to send information to all clients
- */
-//class PlayerAction implements Serializable {
-//	private String name;
-//	private int action;
-//	private int time;
-//	
-//	/**
-//	 * Constructor
-//	 */
-//	public PlayerAction(String name, int action, int time) {
-//		this.name = name;
-//		this.action = action;
-//		this.time = time;
-//	}
-//	
-//	/**
-//	 * Printable output
-//	 */
-//	public String toString() {
-//		return "Player named " + name + " performed action code " + action + " at time " + time; 
-//	}
-//	
-//	/**
-//	 * Getter functions
-//	 */
-//	public String getName() {
-//		return name;
-//	}
-//	
-//	public int getAction() {
-//		return action;
-//	}
-//	
-//	public int getTime() {
-//		return time;
-//	}
-//}
 
 public class MazewarPacket implements Serializable{
 
@@ -126,10 +90,6 @@ public class MazewarPacket implements Serializable{
 	 */
 	public int error_code;
 	
-	/*
-	 * An array of ALL players currently in the game
-	 */
-	public BlockingQueue<PlayerMeta> activeClients;
 	
 	/**
 	 * Information about a single client
@@ -157,4 +117,9 @@ public class MazewarPacket implements Serializable{
 	 * @param move.time
 	 */
 	public SharedData.ActionInfo move;
+	
+	/**
+	 * Hash map of all players in the game
+	 */
+	public ConcurrentHashMap<String, ServerState.PlayerDetails> allPlayers = new ConcurrentHashMap<String, ServerState.PlayerDetails>();
 }

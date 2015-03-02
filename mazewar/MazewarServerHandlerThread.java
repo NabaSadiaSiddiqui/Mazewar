@@ -65,13 +65,25 @@ public class MazewarServerHandlerThread extends Thread {
 				if(packetFromClient.type == MazewarPacket.CLIENT_REGISTER) {
 					PlayerMeta player = packetFromClient.playerInfo;
 					
-					if(ServerState.players.size() < SharedData.MAX_PLAYERS) { // Add player to the queue if possible
+					if(ServerState.allPlayers.size() < SharedData.MAX_PLAYERS) { // Add player to hashmap
+
+						System.out.println("Inside if loop");
+						ServerState.PlayerDetails detail = new ServerState.PlayerDetails(player.port, player.hostname, player.posX, player.posY, player.orientation);
+						ServerState.allPlayers.put(player.name, detail);
+						System.out.println("Size is " + ServerState.allPlayers.size());
+						ServerState.outAll.put(player.name, toClient);
+						
+						SharedData.CURR_PLAYERS_COUNT++;
+
+					}
+					
+					/*if(ServerState.players.size() < SharedData.MAX_PLAYERS) { // Add player to the queue if possible
 						ServerState.players.add(player);
 						ServerState.outAll.put(player.name, toClient);
 						
 						SharedData.CURR_PLAYERS_COUNT++;
 						
-					} else { // Report error
+					}*/ else { // Report error
 						gotServerError = true;
 						packetToClient.type = MazewarPacket.SERVER_ERROR;
 						packetToClient.error_code = MazewarPacket.ERROR_MAX_PLAYER_CAPACITY_REACHED;
@@ -85,7 +97,7 @@ public class MazewarServerHandlerThread extends Thread {
 				}
 				
 				/* enqueue player's action */
-				if(packetFromClient.type == MazewarPacket.CLIENT_ACTION) {
+				/*if(packetFromClient.type == MazewarPacket.CLIENT_ACTION) {
 					String playerName = packetFromClient.player;
 					int playerAction = packetFromClient.action;
 					int seq = ServerState.time;
@@ -131,7 +143,7 @@ public class MazewarServerHandlerThread extends Thread {
 					ServerState.time++;
 					
 					continue;
-				}
+				}*/
 				
 			}
 			
@@ -165,14 +177,14 @@ public class MazewarServerHandlerThread extends Thread {
 			
 			// Stream to write back to client 
 			ObjectOutputStream toClient = ServerState.outAll.get(oStreamsKeys.nextElement());
-					
+		
 			// Create a packet for meet-and-greet all players 
 			MazewarPacket packetToClient = new MazewarPacket();
 			
 			if(!ServerState.PLAYERS_ADDED) {
 				packetToClient.type = MazewarPacket.SERVER_BROADCAST_PLAYERS;
-				packetToClient.activeClients = ServerState.players;
-				
+				packetToClient.allPlayers = ServerState.allPlayers;
+
 				try {
 					toClient.writeObject(packetToClient);
 				} catch (IOException e) {

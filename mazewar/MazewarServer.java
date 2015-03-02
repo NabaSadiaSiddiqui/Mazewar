@@ -5,12 +5,7 @@ import java.util.concurrent.ArrayBlockingQueue;
 public class MazewarServer {
 
 	public static void main(String[] args) throws IOException {
-		
-		/**
-		 * Create a concurrent array to hold up to 4 players in the game
-		 */
-		ServerState.players = new ArrayBlockingQueue<PlayerMeta>(SharedData.MAX_PLAYERS);
-		
+				
 		ServerSocket serverSocket = null;
 		boolean listening = true;
 		

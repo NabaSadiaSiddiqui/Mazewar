@@ -31,11 +31,14 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
+import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
+import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * The entry point and glue code for the game.  It also contains some helpful
@@ -270,19 +273,31 @@ public class Mazewar extends JFrame {
          */
         public static void main(String args[]) {
         	
-        	String hostname = "localhost";
-			int port = 8080;
+        	String hostnameLookupServer = "localhost";
+			int portLookupServer = 8080;
 			
-			if(args.length == 2) {
-				hostname = args[0];
-				port = Integer.parseInt(args[1]);
-			} else {
-				System.err.println("ERROR: Invalid arguments!");
+			ServerSocket clientSocket = null;
+			
+			try {
+				if(args.length == 4) {
+					hostnameLookupServer = args[0];
+					portLookupServer = Integer.parseInt(args[1]);
+					
+					ClientState.hostname = args[2];
+					ClientState.port = Integer.parseInt(args[3]);
+					
+					clientSocket = new ServerSocket(ClientState.port);
+				} else {
+					System.err.println("ERROR: Invalid arguments!");
+					System.exit(-1);
+				}
+			} catch (IOException e) {
+				System.err.println("ERROR: Client could not listen on port!");
 				System.exit(-1);
 			}
 
             /* Create the GUI */
-            new Mazewar(hostname, port);
+            new Mazewar(hostnameLookupServer, portLookupServer);
         }
         
         private static void initNetwork(String hostname, int port) {
@@ -364,7 +379,7 @@ public class Mazewar extends JFrame {
         	// Make a request to register
         	MazewarPacket packetToServer = new MazewarPacket();
         	packetToServer.type = MazewarPacket.CLIENT_REGISTER;
-        	packetToServer.playerInfo = new PlayerMeta(name, location.getX(), location.getY(), orientation);
+        	packetToServer.playerInfo = new PlayerMeta(name, location.getX(), location.getY(), orientation, ClientState.hostname, ClientState.port);
         	
         	try {
 				out.writeObject(packetToServer);
@@ -391,16 +406,29 @@ public class Mazewar extends JFrame {
         }
         
         private static void addRemoteClients(Client self, Maze maze, MazewarPacket packetFromServer) {
-			BlockingQueue<PlayerMeta> activePlayers = packetFromServer.activeClients;
+			//BlockingQueue<PlayerMeta> activePlayers = packetFromServer.activeClients;
+			System.out.println("In addRemoveClients");
+			ConcurrentHashMap<String, ServerState.PlayerDetails> activePlayers = packetFromServer.allPlayers;
+			
+			Enumeration<String> clientKeys = activePlayers.keys();
+			
+			System.out.println(activePlayers.size());
 			
 			for(int i=0; i<SharedData.MAX_PLAYERS; i++) {
-				PlayerMeta player = (PlayerMeta)activePlayers.remove();
-				String playerName = player.name;
+				//PlayerMeta player = (PlayerMeta)activePlayers.remove();
+				String playerName = clientKeys.nextElement();
+				System.out.println(playerName);
+				ServerState.PlayerDetails player = (ServerState.PlayerDetails) activePlayers.get(playerName);
 				if(!self.getName().equals(playerName)) {
 					RemoteClient client = new RemoteClient(playerName);
-					Point point = new Point(player.posX, player.posY);
-					Direction direction = Direction.strToDir(player.orientation);
+					Point point = new Point(player.getX(), player.getY());
+					Direction direction = Direction.strToDir(player.getOrientation());
 					maze.addClientAtPointWithDirection((Client) client, point, direction);
+					
+					// Add location of other client to the queue
+					if(!ClientState.isSelfLocation(player.getHostname(), player.getPort())) {
+						ClientState.others.add(new ClientState.ClientLocation(player.getHostname(), player.getPort()));
+					}
 				}
 			}
         }
@@ -507,7 +535,7 @@ public class Mazewar extends JFrame {
         	packetToServer.player = ClientState.PLAYER_NAME;
         	packetToServer.action = MazewarPacket.CLIENT_RESPAWN;
         	
-        	packetToServer.playerInfo = new PlayerMeta(ClientState.PLAYER_NAME, point.getX(), point.getY(), d.toString());
+        	//packetToServer.playerInfo = new PlayerMeta(ClientState.PLAYER_NAME, point.getX(), point.getY(), d.toString());
         	
         	
         	try {
