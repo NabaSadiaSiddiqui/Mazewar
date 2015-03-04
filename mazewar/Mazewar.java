@@ -53,6 +53,16 @@ public class Mazewar extends JFrame {
 		 * Socket for communication with the server
 		 */
 		static Socket socket = null;
+		
+		/**
+		 * Socket through which communication will be made from other clients
+		 */
+		public static ServerSocket selfSocket = null;
+		
+		/**
+		 * State to indicate if socket is accepting connections
+		 */
+		public static boolean isOpen = false;
 
         /**
          * The default width of the {@link Maze}.
@@ -262,9 +272,7 @@ public class Mazewar extends JFrame {
         	
         	String hostnameLookupServer = "localhost";
 			int portLookupServer = 8080;
-			
-			ServerSocket clientSocket = null;
-			
+						
 			try {
 				if(args.length == 4) {
 					hostnameLookupServer = args[0];
@@ -273,7 +281,7 @@ public class Mazewar extends JFrame {
 					ClientState.hostname = args[2];
 					ClientState.port = Integer.parseInt(args[3]);
 					
-					clientSocket = new ServerSocket(ClientState.port);
+					selfSocket = new ServerSocket(ClientState.port);
 				} else {
 					System.err.println("ERROR: Invalid arguments!");
 					System.exit(-1);
@@ -317,9 +325,10 @@ public class Mazewar extends JFrame {
 					maze.addClientAtPointWithDirection((Client) client, point, direction);
 					
 					// Add location of other client to the queue
+					
 					if(!ClientState.isSelfLocation(player.getHostname(), player.getPort())) {
-						System.out.println("Add others to the queue");
-						//ClientState.others.add(new ClientState.ClientLocation(player.getHostname(), player.getPort()));
+						ClientState.others.add(new ClientState.ClientLocation(player.getHostname(), player.getPort()));
+						System.out.println("Non-blocking");
 					}
 				}
 			}

@@ -42,6 +42,10 @@ public class ClientServerListenerHandlerThread extends Thread {
 	    				break;
 	    			case MazewarPacket.SERVER_ELECT:
 	    				System.out.println("I have been elected by the server");
+	    				System.out.println("Lets accept incoming connections to my port");
+	    				Mazewar.selfSocket.accept();
+	    				System.out.println("Done accepting");
+	    				Mazewar.isOpen = true;
 	    				break;
     				default:
     					break;

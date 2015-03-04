@@ -177,9 +177,22 @@ public class MazewarServerHandlerThread extends Thread {
 			ObjectOutputStream toClient = ServerState.outAll.get(oStreamsKeys.nextElement());
 		
 			// Create a packet for meet-and-greet all players 
-			MazewarPacket packetToClient = new MazewarPacket();
+			MazewarPacket packetToClient;
 			
 			if(!ServerState.PLAYERS_ADDED) {
+				
+				if(i==0) {
+					packetToClient = new MazewarPacket();
+					packetToClient.type = MazewarPacket.SERVER_ELECT;
+					try {
+						toClient.writeObject(packetToClient);
+					} catch(IOException e) {
+						e.printStackTrace();
+					}
+				}
+				
+				
+				packetToClient = new MazewarPacket();
 				packetToClient.type = MazewarPacket.SERVER_BROADCAST_PLAYERS;
 				packetToClient.allPlayers = ServerState.allPlayers;
 
@@ -188,16 +201,6 @@ public class MazewarServerHandlerThread extends Thread {
 				} catch (IOException e) {
 					e.printStackTrace();
 				}
-				
-				/*if(i==0) {
-					packetToClient = new MazewarPacket();
-					packetToClient.type = MazewarPacket.SERVER_ELECT;
-					try {
-						toClient.writeObject(packetToClient);
-					} catch(IOException e) {
-						e.printStackTrace();
-					}
-				}*/
 				
 				if(i==SharedData.MAX_PLAYERS) {
 					ServerState.PLAYERS_ADDED = true;

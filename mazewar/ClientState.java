@@ -73,8 +73,8 @@ public class ClientState {
 			
 			try {
 				socket = new Socket(hostname, port);
-				out = new ObjectOutputStream(socket.getOutputStream());
-				in = new ObjectInputStream(socket.getInputStream());
+				//out = new ObjectOutputStream(socket.getOutputStream());
+				//in = new ObjectInputStream(socket.getInputStream());
 			} catch (UnknownHostException e) {
     			System.err.println("ERROR: Don't know where to connect!");
 				e.printStackTrace();
