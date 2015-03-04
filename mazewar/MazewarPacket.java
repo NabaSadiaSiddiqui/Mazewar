@@ -71,8 +71,10 @@ public class MazewarPacket implements Serializable{
 	public static final int SERVER_BROADCAST_PLAYERS = 204;
 	// Server notification
 	public static final int SERVER_BROADCAST_MOVE = 205;
+	// Server code sent to the elected leader among all peers
+	public static final int SERVER_ELECT = 206;
 	// Server code that something is amiss...check error code
-	public static final int SERVER_ERROR = 206;
+	public static final int SERVER_ERROR = 207;
 	
 	
 	/**

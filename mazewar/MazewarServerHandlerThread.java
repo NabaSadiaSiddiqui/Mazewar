@@ -67,10 +67,8 @@ public class MazewarServerHandlerThread extends Thread {
 					
 					if(ServerState.allPlayers.size() < SharedData.MAX_PLAYERS) { // Add player to hashmap
 
-						System.out.println("Inside if loop");
 						ServerState.PlayerDetails detail = new ServerState.PlayerDetails(player.port, player.hostname, player.posX, player.posY, player.orientation);
 						ServerState.allPlayers.put(player.name, detail);
-						System.out.println("Size is " + ServerState.allPlayers.size());
 						ServerState.outAll.put(player.name, toClient);
 						
 						SharedData.CURR_PLAYERS_COUNT++;
@@ -190,6 +188,16 @@ public class MazewarServerHandlerThread extends Thread {
 				} catch (IOException e) {
 					e.printStackTrace();
 				}
+				
+				/*if(i==0) {
+					packetToClient = new MazewarPacket();
+					packetToClient.type = MazewarPacket.SERVER_ELECT;
+					try {
+						toClient.writeObject(packetToClient);
+					} catch(IOException e) {
+						e.printStackTrace();
+					}
+				}*/
 				
 				if(i==SharedData.MAX_PLAYERS) {
 					ServerState.PLAYERS_ADDED = true;
