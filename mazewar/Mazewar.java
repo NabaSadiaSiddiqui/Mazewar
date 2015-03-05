@@ -328,14 +328,13 @@ public class Mazewar extends JFrame {
 					
 					if(!ClientState.isSelfLocation(player.getHostname(), player.getPort())) {
 						ClientState.others.add(new ClientState.ClientLocation(player.getHostname(), player.getPort()));
-						System.out.println("Non-blocking");
 					}
 				}
 			}
         }
         
         public static boolean forward() {
-        	/* Send action to server */
+        	// Send action to server 
         	MazewarPacket packetToServer = new MazewarPacket();
         	packetToServer.type = MazewarPacket.CLIENT_ACTION;
         	packetToServer.player = ClientState.PLAYER_NAME;

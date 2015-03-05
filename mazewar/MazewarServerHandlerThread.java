@@ -179,18 +179,7 @@ public class MazewarServerHandlerThread extends Thread {
 			// Create a packet for meet-and-greet all players 
 			MazewarPacket packetToClient;
 			
-			if(!ServerState.PLAYERS_ADDED) {
-				
-				if(i==0) {
-					packetToClient = new MazewarPacket();
-					packetToClient.type = MazewarPacket.SERVER_ELECT;
-					try {
-						toClient.writeObject(packetToClient);
-					} catch(IOException e) {
-						e.printStackTrace();
-					}
-				}
-				
+			if(!ServerState.PLAYERS_ADDED) {	
 				
 				packetToClient = new MazewarPacket();
 				packetToClient.type = MazewarPacket.SERVER_BROADCAST_PLAYERS;

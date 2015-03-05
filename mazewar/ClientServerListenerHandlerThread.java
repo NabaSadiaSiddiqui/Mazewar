@@ -38,14 +38,16 @@ public class ClientServerListenerHandlerThread extends Thread {
     			
     			switch(type) {
 	    			case MazewarPacket.SERVER_BROADCAST_PLAYERS:
+	    				Thread thread = new Thread() {
+	    						public void run() {
+	    							try {
+										Mazewar.selfSocket.accept();
+									} catch (IOException e) {
+										e.printStackTrace();
+									}
+	    						}};
+	    				thread.start();
 	    				Mazewar.addRemoteClients(self, maze, packetFromServer);
-	    				break;
-	    			case MazewarPacket.SERVER_ELECT:
-	    				System.out.println("I have been elected by the server");
-	    				System.out.println("Lets accept incoming connections to my port");
-	    				Mazewar.selfSocket.accept();
-	    				System.out.println("Done accepting");
-	    				Mazewar.isOpen = true;
 	    				break;
     				default:
     					break;
