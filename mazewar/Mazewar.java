@@ -191,6 +191,9 @@ public class Mazewar extends JFrame {
                 guiClient = new GUIClient(name);
                 this.addKeyListener(guiClient);
                 
+                // Lets set up and register with the server
+                new ClientServerListenerHandlerThread(socket, guiClient, maze).start();
+                
                 // Use braces to force constructors not to be called at the beginning of the
                 // constructor.
                 /*{
@@ -258,9 +261,9 @@ public class Mazewar extends JFrame {
                 setVisible(true);
                 overheadPanel.repaint();
                 this.requestFocusInWindow();
-                
-                // Lets set up and register with the server
-                new ClientServerListenerHandlerThread(socket, guiClient, maze).start();
+                                
+                // Lets start the game
+                new ClientListenerHandlerThread().start();
         }
 
         
@@ -280,7 +283,6 @@ public class Mazewar extends JFrame {
 					
 					ClientState.hostname = args[2];
 					ClientState.port = Integer.parseInt(args[3]);
-					
 					selfSocket = new ServerSocket(ClientState.port);
 				} else {
 					System.err.println("ERROR: Invalid arguments!");
@@ -317,7 +319,7 @@ public class Mazewar extends JFrame {
 			for(int i=0; i<SharedData.MAX_PLAYERS; i++) {
 				//PlayerMeta player = (PlayerMeta)activePlayers.remove();
 				String playerName = clientKeys.nextElement();
-				ServerState.PlayerDetails player = (ServerState.PlayerDetails) activePlayers.get(playerName);
+				final ServerState.PlayerDetails player = (ServerState.PlayerDetails) activePlayers.get(playerName);
 				if(!self.getName().equals(playerName)) {
 					RemoteClient client = new RemoteClient(playerName);
 					Point point = new Point(player.getX(), player.getY());
@@ -325,9 +327,13 @@ public class Mazewar extends JFrame {
 					maze.addClientAtPointWithDirection((Client) client, point, direction);
 					
 					// Add location of other client to the queue
-					
 					if(!ClientState.isSelfLocation(player.getHostname(), player.getPort())) {
-						ClientState.others.add(new ClientState.ClientLocation(player.getHostname(), player.getPort()));
+						Thread t = new Thread() {
+							public void run() {
+								ClientState.others.add(new ClientState.ClientLocation(player.getHostname(), player.getPort()));
+							}
+						};
+						t.start();
 					}
 				}
 			}
@@ -339,6 +345,10 @@ public class Mazewar extends JFrame {
         	packetToServer.type = MazewarPacket.CLIENT_ACTION;
         	packetToServer.player = ClientState.PLAYER_NAME;
         	packetToServer.action = MazewarPacket.CLIENT_FORWARD;
+        	
+        	System.out.println("Forward action");
+        	
+        	ClientMulticast.mMove(packetToServer);
         	
         	/*try {
 				out.writeObject(packetToServer);

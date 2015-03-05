@@ -1,15 +1,9 @@
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.net.Socket;
-import java.net.UnknownHostException;
-import java.util.HashMap;
-import java.util.Iterator;
+import java.io.*;
+import java.net.*;
+import java.util.*;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.LinkedBlockingQueue;
-
 
 public class ClientState {
 	
@@ -73,8 +67,6 @@ public class ClientState {
 			
 			try {
 				socket = new Socket(hostname, port);
-				//out = new ObjectOutputStream(socket.getOutputStream());
-				//in = new ObjectInputStream(socket.getInputStream());
 			} catch (UnknownHostException e) {
     			System.err.println("ERROR: Don't know where to connect!");
 				e.printStackTrace();
@@ -85,6 +77,14 @@ public class ClientState {
 		}
 		
 		public ObjectOutputStream getOut() {
+			if(out == null) {
+				try {
+					out = new ObjectOutputStream(socket.getOutputStream());
+					System.out.println("Got streams to write to");
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+			}
 			return out;
 		}
 		

@@ -375,3 +375,5 @@ SharedData.class : SharedData.java
 ServerState.class : ServerState.java
 ClientState.class : ClientState.java
 ClientServerListenerHandlerThread.class : ClientServerListenerHandlerThread.java
+ClientMulticast.class : ClientMulticast.java
+ClientListenerHandlerThread.class : ClientListenerHandlerThread.java
