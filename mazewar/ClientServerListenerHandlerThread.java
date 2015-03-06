@@ -41,8 +41,14 @@ public class ClientServerListenerHandlerThread extends Thread {
 	    				Thread thread = new Thread() {
 	    						public void run() {
 	    							try {
-										Mazewar.selfSocket.accept();
-									} catch (IOException e) {
+	    								System.out.println("Socket is not connected");
+										Mazewar.selfConn = Mazewar.selfSocket.accept();
+										System.out.println("isInputShutdown is " + Mazewar.selfConn.isInputShutdown());
+										Mazewar.selfIn = new ObjectInputStream(Mazewar.selfConn.getInputStream());
+										System.out.println("isInputShutdown is " + Mazewar.selfConn.isInputShutdown());
+					    				// Lets start the game
+					                    new ClientListenerHandlerThread().start();
+	    							} catch (IOException e) {
 										e.printStackTrace();
 									}
 	    						}};

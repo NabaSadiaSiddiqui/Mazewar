@@ -58,6 +58,8 @@ public class Mazewar extends JFrame {
 		 * Socket through which communication will be made from other clients
 		 */
 		public static ServerSocket selfSocket = null;
+		public static Socket selfConn = null;
+		public static ObjectInputStream selfIn = null;
 		
 		/**
 		 * State to indicate if socket is accepting connections
@@ -263,7 +265,7 @@ public class Mazewar extends JFrame {
                 this.requestFocusInWindow();
                                 
                 // Lets start the game
-                new ClientListenerHandlerThread().start();
+                //new ClientListenerHandlerThread().start();
         }
 
         
@@ -328,6 +330,8 @@ public class Mazewar extends JFrame {
 					
 					// Add location of other client to the queue
 					if(!ClientState.isSelfLocation(player.getHostname(), player.getPort())) {
+						//ClientState.others.add(new ClientState.ClientLocation(player.getHostname(), player.getPort()));
+
 						Thread t = new Thread() {
 							public void run() {
 								ClientState.others.add(new ClientState.ClientLocation(player.getHostname(), player.getPort()));

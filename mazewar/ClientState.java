@@ -85,10 +85,32 @@ public class ClientState {
 					e.printStackTrace();
 				}
 			}
+			
+			if(!socket.isConnected()) {
+				System.out.println("Its closed");
+			}
+			
 			return out;
 		}
 		
 		public ObjectInputStream getIn() {
+			if(in == null) {
+				try {
+					InputStream iStream = socket.getInputStream();
+					while(iStream == null) {
+						iStream = socket.getInputStream();
+					}
+					in = new ObjectInputStream(iStream);
+					System.out.println("Got streams to read from");
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+			}
+			
+			if(!socket.isConnected()) {
+				System.out.println("Its closed");
+			}
+			
 			return in;
 		}
 	}

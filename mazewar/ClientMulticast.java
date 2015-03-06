@@ -9,15 +9,10 @@ public class ClientMulticast {
 	}
 	
 	public static void mMove(MazewarPacket packetToOthers) {
-		System.out.println("Getting an iterator");
 		Iterator<ClientState.ClientLocation> others = ClientState.others.iterator();
-		System.out.println("Got an iterator");
-		System.out.println("Before while loop");
 		while(others.hasNext()) {
-			System.out.println("Inside while loop");
 			ClientState.ClientLocation other = others.next();
 			try {
-				System.out.println("Sending event to others");
 				other.getOut().writeObject(packetToOthers);
 			} catch (IOException e) {
 				e.printStackTrace();
