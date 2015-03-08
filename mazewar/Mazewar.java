@@ -306,7 +306,7 @@ public class Mazewar extends JFrame {
 					
 					// Add location of other client to the queue
 					if(!ClientState.isSelfLocation(player.getHostname(), player.getPort())) {
-						ClientState.others.add(new ClientState.ClientLocation(player.getHostname(), player.getPort(), player.getId()));
+						ClientState.others.add(new ClientState.ClientLocation(player.getHostname(), player.getPort(), player.getId(), player.getName()));
 
 					}
 				}

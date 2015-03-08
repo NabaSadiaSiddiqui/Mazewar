@@ -37,6 +37,7 @@ public class ClientMulticast {
 				break;
 			case MazewarPacket.CLIENT_QUIT:
 				packetToOthers.action = action;
+				packetToOthers.have_token = true;
 				break;
 			default:
 				System.err.println("What action did you just perform?!?!");

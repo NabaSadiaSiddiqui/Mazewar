@@ -6,26 +6,22 @@ public class TokenMaster extends Thread {
 	}
 	
 	public void run() {
-		//while(true) {	
 		System.out.println("Passing token to next player in the ring");
-			if(!TokenMaster.needToken() && TokenMaster.haveToken()) { // dont need it BUT have it
-				TokenMaster.passToken();
-			} /*else {
-				try {
-					Thread.sleep(10);
-				} catch (InterruptedException e) {
-					e.printStackTrace();
-				}
-			}*/
-		//}
+		if(!TokenMaster.needToken() && TokenMaster.haveToken()) { // dont need it BUT have it
+			TokenMaster.passToken();
+		}
 	}
 	
 	public static void passToken() {
+		if(ClientState.nextClient == null) {
+			return;
+		}
 		try {
 			ClientState.tokenLock.lock();
 			ClientState.HAVE_TOKEN = false;
 			MazewarPacket packetToNext = new MazewarPacket();
 			packetToNext.type = MazewarPacket.CLIENT_TOKEN_EXCHANGE;
+			System.out.println(ClientState.nextClient.getName());
 			ClientState.nextClient.getOut().writeObject(packetToNext);
 			ClientState.tokenLock.unlock();
 		} catch (IOException e) {

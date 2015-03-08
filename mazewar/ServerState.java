@@ -1,18 +1,10 @@
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
-import java.net.Socket;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.LinkedBlockingQueue;
 
-public class ServerState {
-	
-	/**
-	 * Queue of all players in the game
-	 */
-	//static BlockingQueue<PlayerMeta> players = new ArrayBlockingQueue<PlayerMeta>(SharedData.MAX_PLAYERS);
-	
+public class ServerState {	
 	/**
 	 * Boolean to indicate if all players in the game have been introduced
 	 */
@@ -26,13 +18,7 @@ public class ServerState {
 	/**
 	 * Array of points occupied by player(s)
 	 */
-	static BlockingQueue<Point> occupiedCells = new ArrayBlockingQueue<Point>(SharedData.MAX_PLAYERS);	
-	
-	/**
-	 * Queue of actions to broadcast by server
-	 * Use LinkedBlockingQueue instead of, say ArrayBlockingQueue, because we do not need to specify a capacity!
-	 */
-	static BlockingQueue<SharedData.ActionInfo> actionQueue = new LinkedBlockingQueue<SharedData.ActionInfo>();
+	static BlockingQueue<Point> occupiedCells = new ArrayBlockingQueue<Point>(SharedData.MAX_PLAYERS);
 	
 	/**
 	 * Logical time of the server

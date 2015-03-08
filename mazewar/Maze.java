@@ -42,7 +42,7 @@ public abstract class Maze {
      * Check whether a {@link Point} is within the bounds of the {@link Maze}. 
      * @return <code>true</code> if the point lies within the {@link Maze}, <code>false</code> otherwise.
      */
-    public abstract boolean checkBounds(Point point); 
+    public abstract boolean checkBounds(Point point);
 
     /** 
      * Obtain the {@link Cell} corresponding to a given {@link Point} in the {@link Maze}.

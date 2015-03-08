@@ -11,6 +11,7 @@ import java.util.concurrent.locks.ReentrantLock;
 public class ClientState {
 	
 	public static String hostname = "localhost";
+	
 	public static int port;
 	
 	public static int ID_DEFAULT = -1;
@@ -45,13 +46,7 @@ public class ClientState {
 	 * Thread responsible for passing down the token
 	 */
 	public static Thread tokenMaster;
-	
-	/**
-	 * Map of actions performed by the different players in the game
-	 * Key is the logical time it was performed at
-	 */
-	//static ConcurrentHashMap<String, SharedData.ActionInfo> actionQueue = new ConcurrentHashMap<String, SharedData.ActionInfo>();
-	
+		
 	/**
 	 * Queue of actions performed by the player
 	 */
@@ -66,7 +61,7 @@ public class ClientState {
 	static BlockingQueue<ClientLocation> others = new ArrayBlockingQueue<ClientLocation>(SharedData.MAX_PLAYERS-1);
 
 	static class ClientLocation {
-		private static String hostname;
+		private static String hostname, name;
 		private static int port;
 		
 		/**
@@ -82,10 +77,11 @@ public class ClientState {
 		// Unique id of the client, assigned by the server
 		private static int id;
 		
-		public ClientLocation(String hostname, int port, int id) {
+		public ClientLocation(String hostname, int port, int id, String name) {
 			this.hostname = hostname;
 			this.port = port;
 			this.id = id;
+			this.name = name;
 			
 			try {
 				socket = new Socket(hostname, port);
@@ -138,6 +134,10 @@ public class ClientState {
 		
 		public int getId() {
 			return id;
+		}
+		
+		public String getName() {
+			return name;
 		}
 	}
 	

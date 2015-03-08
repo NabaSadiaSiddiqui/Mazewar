@@ -364,6 +364,8 @@ MazewarServerHandlerThread.class : ServerState.java
 MazewarServerHandlerThread.class : ServerState.class
 SharedData.class : SharedData.java
 ServerState.class : ServerState.java
+ServerState.class : Point.java
+ServerState.class : Point.class
 ClientState.class : ClientState.java
 ClientServerListenerHandlerThread.class : ClientServerListenerHandlerThread.java
 ClientMulticast.class : ClientMulticast.java

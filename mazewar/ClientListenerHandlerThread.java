@@ -75,6 +75,7 @@ public class ClientListenerHandlerThread extends Thread {
 							case MazewarPacket.CLIENT_QUIT:
 								Mazewar.consolePrintLn("Action: quit");
 								Mazewar.removePlayer(playerName);
+								cleanupPeerInfo(playerName);
 								break;
 							default:
 								Mazewar.consolePrint("Action: unknown");
@@ -92,6 +93,45 @@ public class ClientListenerHandlerThread extends Thread {
 			e.printStackTrace();
 		} catch (ClassNotFoundException e) {
 			e.printStackTrace();
+		}
+	}
+	
+	private static void cleanupPeerInfo(String name) {
+		Iterator others = ClientState.others.iterator();
+		ClientState.ClientLocation _this = null;
+		while(others.hasNext()) {
+			ClientState.ClientLocation peer = (ClientState.ClientLocation) others.next();
+			if(peer.getName().equals(name)) {
+				_this = peer;
+				break;
+			}
+		}
+		if(_this.getId() == ClientState.nextClient.getId()) {
+			reassignNextClient(_this.getId());
+		}
+		ClientState.others.remove(_this);
+	}
+	
+	private static void reassignNextClient(int prevClientId) {
+		int nextClientId = prevClientId + 1;
+		if(nextClientId >= SharedData.MAX_PLAYERS) {
+			nextClientId = 0;
+		}
+		
+		if(nextClientId == ClientState.PLAYER_ID) {
+			ClientState.nextClient = null;
+			return;
+		}
+		
+		Iterator<ClientState.ClientLocation> others = ClientState.others.iterator();
+		
+		while(others.hasNext()) {
+			ClientState.ClientLocation other = (ClientState.ClientLocation) others.next();
+			if(other.getId() == nextClientId) {
+				ClientState.nextClient = other;
+				System.out.println("Set next client in the ring");
+				break;
+			}
 		}
 	}
 }
