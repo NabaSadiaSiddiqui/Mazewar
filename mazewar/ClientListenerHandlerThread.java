@@ -42,7 +42,7 @@ public class ClientListenerHandlerThread extends Thread {
 							if(player.getName().equals(playerName))
 								break;
 						}
-						
+												
 						switch(action) {
 							case MazewarPacket.CLIENT_FORWARD:
 								Mazewar.consolePrintLn("Action: forward");
@@ -71,6 +71,10 @@ public class ClientListenerHandlerThread extends Thread {
 								Point p = new Point(pInfo.getX(), pInfo.getY());
 								Direction d = Direction.strToDir(pInfo.getOrientation());
 								player.respawn(name, p, d);
+								break;
+							case MazewarPacket.CLIENT_QUIT:
+								Mazewar.consolePrintLn("Action: quit");
+								Mazewar.removePlayer(playerName);
 								break;
 							default:
 								Mazewar.consolePrint("Action: unknown");

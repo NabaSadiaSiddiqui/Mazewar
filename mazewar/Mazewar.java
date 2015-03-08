@@ -137,26 +137,6 @@ public class Mazewar extends JFrame {
          * Static method for performing cleanup before exiting the game.
          */
         public static void quit() {
-                // Put any network clean-up code you might have here.
-                // (inform other implementations on the network that you have 
-                //  left, etc.)
-                
-        	/* Send action to server */
-        	MazewarPacket packetToServer = new MazewarPacket();
-        	packetToServer.type = MazewarPacket.CLIENT_ACTION;
-        	packetToServer.player = ClientState.PLAYER_NAME;
-        	packetToServer.action = MazewarPacket.CLIENT_QUIT;
-        	
-        	/*try {
-				out.writeObject(packetToServer);
-				consolePrintLn(ClientState.PLAYER_NAME + ": sent action to quit to server successfully");
-			} catch (IOException e) {
-				System.err.println("ERROR: Could not write to output stream");
-				System.exit(1);
-			}*/
-        	
-        	//return false;
-        	
             System.exit(0);
         }
        
@@ -180,7 +160,7 @@ public class Mazewar extends JFrame {
                 // Throw up a dialog to get the GUIClient name.
                 String name = JOptionPane.showInputDialog("Enter your name");
                 if((name == null) || (name.length() == 0)) {
-                  Mazewar.quit();
+                	Mazewar.quit();
                 }
                 
                 // You may want to put your network initialization code somewhere in

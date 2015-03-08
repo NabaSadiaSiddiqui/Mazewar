@@ -32,9 +32,11 @@ public class ClientMulticast {
 				packetToOthers.action = action;
 				break;
 			case MazewarPacket.CLIENT_RESPAWN:
-				System.out.println("ClientMulticast: respawn");
 				packetToOthers.action = action;
 				packetToOthers.playerInfo = newPosition;
+				break;
+			case MazewarPacket.CLIENT_QUIT:
+				packetToOthers.action = action;
 				break;
 			default:
 				System.err.println("What action did you just perform?!?!");
@@ -77,6 +79,20 @@ public class ClientMulticast {
 					System.err.println("What action did you just perform?!?!");
 					break;
 			}
+		} else if(action == MazewarPacket.CLIENT_QUIT) {
+			Iterator<ClientState.ClientLocation> others = ClientState.others.iterator();
+			while(others.hasNext()) {
+				ClientState.ClientLocation other = others.next();
+				try {
+					other.getOut().writeObject(packetToOthers);
+					Mazewar.consolePrintLn(ClientState.PLAYER_NAME + ": sent action to respawn to others successfully");
+
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+			}
+			
+			Mazewar.quit();
 		} else {
 			ClientState.tokenLock.lock();
 			if(ClientState.HAVE_TOKEN) {
