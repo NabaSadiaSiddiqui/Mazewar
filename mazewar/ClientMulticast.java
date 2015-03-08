@@ -8,7 +8,7 @@ public class ClientMulticast {
 		
 	}
 	
-	public static void mMove(int action) {
+	public static void mMove(int action, PlayerMeta newPosition) {
 		
 		ClientState.actions.add(action);
 		
@@ -36,19 +36,23 @@ public class ClientMulticast {
 				case MazewarPacket.CLIENT_FIRE:
 					packetToOthers.action = action;
 					break;
+				case MazewarPacket.CLIENT_RESPAWN:
+					System.out.println("ClientMulticast: respawn");
+					packetToOthers.action = action;
+					packetToOthers.playerInfo = newPosition;
+					break;
 				default:
 					System.err.println("What action did you just perform?!?!");
 					break;
 			}
 		
-			ClientState.tokenLock.lock();
-			if(ClientState.HAVE_TOKEN) {
+			if(action == MazewarPacket.CLIENT_RESPAWN) {
 				Iterator<ClientState.ClientLocation> others = ClientState.others.iterator();
 				while(others.hasNext()) {
 					ClientState.ClientLocation other = others.next();
 					try {
 						other.getOut().writeObject(packetToOthers);
-						Mazewar.consolePrintLn(ClientState.PLAYER_NAME + ": sent action to move to others successfully");
+						Mazewar.consolePrintLn(ClientState.PLAYER_NAME + ": sent action to respawn to others successfully");
 	
 					} catch (IOException e) {
 						e.printStackTrace();
@@ -67,30 +71,75 @@ public class ClientMulticast {
 				}
 				
 				switch(action) {
-					case MazewarPacket.CLIENT_FORWARD:
-						player.forward();
-						break;
-					case MazewarPacket.CLIENT_BACKWARD:
-						player.backup();
-						break;
-					case MazewarPacket.CLIENT_LEFT:
-						player.turnLeft();
-			        	break;
-					case MazewarPacket.CLIENT_RIGHT:
-						player.turnRight();
-			        	break;
-					case MazewarPacket.CLIENT_FIRE:
-						player.fire();
+					case MazewarPacket.CLIENT_RESPAWN:
+						System.out.println("ClientMulticast: Respawn self");
+						String name = newPosition.getName();
+						Point p = new Point(newPosition.getX(), newPosition.getY());
+						Direction d = Direction.strToDir(newPosition.getOrientation());
+						player.respawn(name, p, d);
 						break;
 			        default:
 						System.err.println("What action did you just perform?!?!");
 						break;
 				}
 			} else {
-				System.out.println("Do you really wanna be sending this...");
+				ClientState.tokenLock.lock();
+				if(ClientState.HAVE_TOKEN) {
+					Iterator<ClientState.ClientLocation> others = ClientState.others.iterator();
+					while(others.hasNext()) {
+						ClientState.ClientLocation other = others.next();
+						try {
+							other.getOut().writeObject(packetToOthers);
+							Mazewar.consolePrintLn(ClientState.PLAYER_NAME + ": sent action to move to others successfully");
+		
+						} catch (IOException e) {
+							e.printStackTrace();
+						}
+					}
+					
+					
+					String playerName = ClientState.PLAYER_NAME;
+					Iterator allClients = Mazewar.maze.getClients();
+					Client player = null;
+					while(allClients.hasNext()) {
+						player = (Client) allClients.next();
+						
+						if(player.getName().equals(playerName))
+							break;
+					}
+					
+					switch(action) {
+						case MazewarPacket.CLIENT_FORWARD:
+							player.forward();
+							break;
+						case MazewarPacket.CLIENT_BACKWARD:
+							player.backup();
+							break;
+						case MazewarPacket.CLIENT_LEFT:
+							player.turnLeft();
+				        	break;
+						case MazewarPacket.CLIENT_RIGHT:
+							player.turnRight();
+				        	break;
+						case MazewarPacket.CLIENT_FIRE:
+							player.fire();
+							break;
+						case MazewarPacket.CLIENT_RESPAWN:
+							System.out.println("ClientMulticast: Respawn self");
+							String name = newPosition.getName();
+							Point p = new Point(newPosition.getX(), newPosition.getY());
+							Direction d = Direction.strToDir(newPosition.getOrientation());
+							player.respawn(name, p, d);
+							break;
+				        default:
+							System.err.println("What action did you just perform?!?!");
+							break;
+					}
+				} else {
+					System.out.println("Do you really wanna be sending this...");
+				}
+				ClientState.tokenLock.unlock();
 			}
-			
-			ClientState.tokenLock.unlock();
 		}
 	}
 }

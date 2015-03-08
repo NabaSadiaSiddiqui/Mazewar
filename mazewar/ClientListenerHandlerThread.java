@@ -55,8 +55,16 @@ public class ClientListenerHandlerThread extends Thread {
 								player.turnRight();
 								break;
 							case MazewarPacket.CLIENT_FIRE:
-								Mazewar.consolePrint("Action: fire");
+								Mazewar.consolePrintLn("Action: fire");
 								player.fire();
+								break;
+							case MazewarPacket.CLIENT_RESPAWN:
+								Mazewar.consolePrintLn("Action: respawn");
+								PlayerMeta pInfo = packetFromClient.playerInfo;
+								String name = pInfo.getName();
+								Point p = new Point(pInfo.getX(), pInfo.getY());
+								Direction d = Direction.strToDir(pInfo.getOrientation());
+								player.respawn(name, p, d);
 								break;
 							default:
 								Mazewar.consolePrint("Action: unknown");

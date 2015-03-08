@@ -357,45 +357,10 @@ public class Mazewar extends JFrame {
     		}
     	}
         
-        public static boolean fire() {
-        	/* Send action to server */
-        	MazewarPacket packetToServer = new MazewarPacket();
-        	packetToServer.type = MazewarPacket.CLIENT_ACTION;
-        	packetToServer.player = ClientState.PLAYER_NAME;
-        	packetToServer.action = MazewarPacket.CLIENT_FIRE;
-        	
-        	/*try {
-				out.writeObject(packetToServer);
-				consolePrintLn(ClientState.PLAYER_NAME + ": sent action to fire to server successfully");
-			} catch (IOException e) {
-				System.err.println("8");
-				System.err.println("ERROR: Could not write to output stream");
-				System.exit(1);
-			}*/
-        	
-        	return false;
-        }
-        
-        public static boolean respawn(Point point, Direction d) {
-        	/* Send action to server */
-        	MazewarPacket packetToServer = new MazewarPacket();
-        	packetToServer.type = MazewarPacket.CLIENT_ACTION;
-        	packetToServer.player = ClientState.PLAYER_NAME;
-        	packetToServer.action = MazewarPacket.CLIENT_RESPAWN;
-        	
-        	//packetToServer.playerInfo = new PlayerMeta(ClientState.PLAYER_NAME, point.getX(), point.getY(), d.toString());
-        	
-        	
-        	/*try {
-				out.writeObject(packetToServer);
-				consolePrintLn(ClientState.PLAYER_NAME + ": sent action to respawn to server successfully");
-			} catch (IOException e) {
-				System.err.println("9");
-				System.err.println("ERROR: Could not write to output stream");
-				System.exit(1);
-			}*/
-        	
-        	return false;
+        public static void respawn(Point point, Direction d) {
+        	System.out.println("Mazewar: respawn");
+        	PlayerMeta newPos = new PlayerMeta(ClientState.PLAYER_ID, ClientState.PLAYER_NAME, point.getX(), point.getY(), d.toString(), ClientState.hostname, ClientState.port);
+        	ClientMulticast.mMove(MazewarPacket.CLIENT_RESPAWN, newPos);
         }
         
         public static boolean removePlayer(String name) {

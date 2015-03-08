@@ -46,19 +46,19 @@ public class GUIClient extends LocalClient implements KeyListener {
                 Mazewar.quit();
             // Up-arrow moves forward.
             } else if(e.getKeyCode() == KeyEvent.VK_UP) {
-            	ClientMulticast.mMove(MazewarPacket.CLIENT_FORWARD);
+            	ClientMulticast.mMove(MazewarPacket.CLIENT_FORWARD, null);
             // Down-arrow moves backward.
             } else if(e.getKeyCode() == KeyEvent.VK_DOWN) {
-            	ClientMulticast.mMove(MazewarPacket.CLIENT_BACKWARD);
+            	ClientMulticast.mMove(MazewarPacket.CLIENT_BACKWARD, null);
             // Left-arrow turns left.
             } else if(e.getKeyCode() == KeyEvent.VK_LEFT) {
-            	ClientMulticast.mMove(MazewarPacket.CLIENT_LEFT);
+            	ClientMulticast.mMove(MazewarPacket.CLIENT_LEFT, null);
             // Right-arrow turns right.
             } else if(e.getKeyCode() == KeyEvent.VK_RIGHT) {
-            	ClientMulticast.mMove(MazewarPacket.CLIENT_RIGHT);
+            	ClientMulticast.mMove(MazewarPacket.CLIENT_RIGHT, null);
             // Spacebar fires.
             } else if(e.getKeyCode() == KeyEvent.VK_SPACE) {
-            	ClientMulticast.mMove(MazewarPacket.CLIENT_FIRE);
+            	ClientMulticast.mMove(MazewarPacket.CLIENT_FIRE, null);
             }
         }
         

@@ -467,6 +467,7 @@ public class MazeImpl extends Maze implements Serializable, ClientListener, Runn
                 
                 update();
                 
+                System.out.println("MazeImpl: checking if self");
                 if(ClientState.isSelf(target)) {	//GUIClient
                 	
                     // Pick a random starting point, and check to see if it is already occupied
@@ -493,7 +494,7 @@ public class MazeImpl extends Maze implements Serializable, ClientListener, Runn
                     //notifyClientKilled(source, target);
                 	
                 	
-                	
+                	System.out.println("MazeImpl: calling respawn");
                     Mazewar.respawn(point, d);
                 }
                 

@@ -7,27 +7,29 @@ public class TokenMaster extends Thread {
 	
 	public void run() {
 		while(true) {
-			if(canReleaseToken()) {
-				ClientState.tokenLock.lock();
-				ClientState.HAVE_TOKEN = false;
-				MazewarPacket packetToNext = new MazewarPacket();
-				packetToNext.type = MazewarPacket.CLIENT_TOKEN_EXCHANGE;
-				try {
+			try {
+				if(canReleaseToken()) {
+					ClientState.tokenLock.lock();
+					ClientState.HAVE_TOKEN = false;
+					MazewarPacket packetToNext = new MazewarPacket();
+					packetToNext.type = MazewarPacket.CLIENT_TOKEN_EXCHANGE;
 					ClientState.nextClient.getOut().writeObject(packetToNext);
-				} catch (IOException e) {
-					e.printStackTrace();
+					ClientState.tokenLock.unlock();
+					Thread.sleep(100);
 				}
-				ClientState.tokenLock.unlock();
-				try {
-					Thread.sleep(10);
-				} catch (InterruptedException e) {
-					e.printStackTrace();
-				}
+			} catch (IOException e) {
+				e.printStackTrace();
+			} catch (InterruptedException e) {
+				e.printStackTrace();
 			}
 		}
 	}
 	
 	private boolean canReleaseToken() {
-		return ClientState.HAVE_TOKEN;
+		boolean res = false;
+		ClientState.tokenLock.lock();
+		res = ClientState.HAVE_TOKEN;
+		ClientState.tokenLock.unlock();
+		return res;
 	}
 }
