@@ -18,6 +18,9 @@ public class ClientState {
 	// State indicates if player has the token
 	public static boolean HAVE_TOKEN = false;
 	
+	// State indicates if player needs token to enter a critical section
+	public static boolean NEED_TOKEN = false;
+	
 	public static int CURR_TIME = 0;
 	
 	// Name of the player

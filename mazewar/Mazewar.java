@@ -335,9 +335,7 @@ public class Mazewar extends JFrame {
 				}
 			}
 			setNextClient();
-			TokenMaster tokenMaster = new TokenMaster();
-			tokenMaster.start();
-        }
+		}
         
     	private static void setNextClient() {
     		int nextClientId = ClientState.PLAYER_ID + 1;

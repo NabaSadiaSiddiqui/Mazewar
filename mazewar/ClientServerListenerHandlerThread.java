@@ -53,10 +53,8 @@ public class ClientServerListenerHandlerThread extends Thread {
 	    				Mazewar.addRemoteClients(self, maze, packetFromServer);
 	    				break;
 	    			case MazewarPacket.SERVER_SET_TOKEN:
-	    				ClientState.tokenLock.lock();
-	    				ClientState.HAVE_TOKEN = true;
-	    				ClientState.tokenLock.unlock();
-	    				System.out.println("I have the token now");
+	    				TokenMaster.setHaveToken();
+	    				new TokenMaster().start();
 	    				break;
     				default:
     					break;

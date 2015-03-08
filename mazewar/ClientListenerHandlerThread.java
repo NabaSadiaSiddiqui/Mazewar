@@ -20,9 +20,15 @@ public class ClientListenerHandlerThread extends Thread {
 				
 				switch(type) {
 					case MazewarPacket.CLIENT_TOKEN_EXCHANGE:
-						ClientState.tokenLock.lock();
-						ClientState.HAVE_TOKEN = true;
-						ClientState.tokenLock.unlock();
+						TokenMaster.setHaveToken();
+						try {
+							Thread.sleep(200);
+						} catch (InterruptedException e) {
+							e.printStackTrace();
+						}
+						if(TokenMaster.haveToken() && !TokenMaster.needToken()) { // dont need it BUT have it
+							TokenMaster.passToken();
+						}
 						break;
 					case MazewarPacket.CLIENT_ACTION:
 						
