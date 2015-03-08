@@ -1,23 +1,18 @@
 import java.io.Serializable;
-import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Inline class to describe a client on the maze
- * @author siddi224
  */
 class PlayerMeta implements Serializable {
-	public String name;
-	public int posX;
-	public int posY;
-	public String orientation;
-	public String hostname;
-	public int port;
+	private int id, port, posX, posY;
+	private String name, hostname, orientation;
 	
 	/**
 	 * Constructor
 	 */
-	public PlayerMeta(String name, int posX, int posY, String orientation, String hostname, int port) {
+	public PlayerMeta(int id, String name, int posX, int posY, String orientation, String hostname, int port) {
+		this.id = id;
 		this.name = name;
 		this.posX = posX;
 		this.posY = posY;
@@ -30,11 +25,42 @@ class PlayerMeta implements Serializable {
 	 * Printable output
 	 */
 	public String toString() {
-		return " Remote client is " + name + ", at x-position of " + posX + " and y-position of " + posY + ", facing " + orientation;
+		return " Remote client is " + name + ", at " + port + ":" + hostname;
+	}
+	
+	/**
+	 * Getter functions
+	 */
+	public int getId() {
+		return id;
+	}
+	
+	public String getName() {
+		return name;
+	}
+	
+	public int getX() {
+		return posX;
+	}
+	
+	public int getY() {
+		return posY;
+	}
+	
+	public String getOrientation() {
+		return orientation;
+	}
+	
+	public String getHostname() {
+		return hostname;
+	}
+	
+	public int getPort() {
+		return port;
 	}
 }
 
-public class MazewarPacket implements Serializable{
+public class MazewarPacket implements Serializable {
 
 	/**
 	 * Constants
@@ -60,6 +86,10 @@ public class MazewarPacket implements Serializable{
 	public static final int CLIENT_RESPAWN = 109;
 	// Client request to quit game
 	public static final int CLIENT_QUIT = 110;
+	// Client assigning the next player the token
+	public static final int CLIENT_TOKEN_EXCHANGE = 111;
+	// Client ack code to player that sent out an action
+	//public static final int CLIENT_ACK = 112;
 	
 	// Server ack code to player wanting to join the game
 	public static final int SERVER_ACK_JOIN = 201;
@@ -71,8 +101,10 @@ public class MazewarPacket implements Serializable{
 	public static final int SERVER_BROADCAST_PLAYERS = 204;
 	// Server notification
 	public static final int SERVER_BROADCAST_MOVE = 205;
+	// Server code to assign token
+	public static final int SERVER_SET_TOKEN = 206;
 	// Server code that something is amiss...check error code
-	public static final int SERVER_ERROR = 206;
+	public static final int SERVER_ERROR = 207;
 	
 	
 	/**
@@ -121,5 +153,5 @@ public class MazewarPacket implements Serializable{
 	/**
 	 * Hash map of all players in the game
 	 */
-	public ConcurrentHashMap<String, ServerState.PlayerDetails> allPlayers = new ConcurrentHashMap<String, ServerState.PlayerDetails>();
+	public ConcurrentHashMap<String, PlayerMeta> allPlayers = new ConcurrentHashMap<String, PlayerMeta>();
 }

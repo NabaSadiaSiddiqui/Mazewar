@@ -354,8 +354,6 @@ MazewarServer.class : SharedData.java
 MazewarServer.class : SharedData.class
 MazewarServer.class : ServerState.java
 MazewarServer.class : ServerState.class
-MazewarServer.class : MazewarServerBroadcastThread.java
-MazewarServer.class : MazewarServerBroadcastThread.class
 MazewarPacket.class : MazewarPacket.java
 MazewarServerHandlerThread.class : MazewarServerHandlerThread.java
 MazewarServerHandlerThread.class : MazewarPacket.java
@@ -364,16 +362,10 @@ MazewarServerHandlerThread.class : SharedData.java
 MazewarServerHandlerThread.class : SharedData.class
 MazewarServerHandlerThread.class : ServerState.java
 MazewarServerHandlerThread.class : ServerState.class
-MazewarServerBroadcastThread.class : MazewarServerBroadcastThread.java
-MazewarServerBroadcastThread.class : MazewarPacket.java
-MazewarServerBroadcastThread.class : MazewarPacket.class
-MazewarServerBroadcastThread.class : SharedData.java
-MazewarServerBroadcastThread.class : SharedData.class
-MazewarServerBroadcastThread.class : ServerState.java
-MazewarServerBroadcastThread.class : ServerState.class
 SharedData.class : SharedData.java
 ServerState.class : ServerState.java
 ClientState.class : ClientState.java
 ClientServerListenerHandlerThread.class : ClientServerListenerHandlerThread.java
 ClientMulticast.class : ClientMulticast.java
 ClientListenerHandlerThread.class : ClientListenerHandlerThread.java
+TokenMaster.class : TokenMaster.java

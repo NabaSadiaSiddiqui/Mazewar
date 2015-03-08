@@ -263,9 +263,6 @@ public class Mazewar extends JFrame {
                 setVisible(true);
                 overheadPanel.repaint();
                 this.requestFocusInWindow();
-                                
-                // Lets start the game
-                //new ClientListenerHandlerThread().start();
         }
 
         
@@ -312,16 +309,15 @@ public class Mazewar extends JFrame {
         }
         
         public static void addRemoteClients(Client self, Maze maze, MazewarPacket packetFromServer) {
-			//BlockingQueue<PlayerMeta> activePlayers = packetFromServer.activeClients;
-
-        	ConcurrentHashMap<String, ServerState.PlayerDetails> activePlayers = packetFromServer.allPlayers;
+        	ConcurrentHashMap<String, PlayerMeta> activePlayers = packetFromServer.allPlayers;
 			
 			Enumeration<String> clientKeys = activePlayers.keys();
 						
 			for(int i=0; i<SharedData.MAX_PLAYERS; i++) {
-				//PlayerMeta player = (PlayerMeta)activePlayers.remove();
 				String playerName = clientKeys.nextElement();
-				final ServerState.PlayerDetails player = (ServerState.PlayerDetails) activePlayers.get(playerName);
+
+				final PlayerMeta player = (PlayerMeta) activePlayers.get(playerName);
+				
 				if(!self.getName().equals(playerName)) {
 					RemoteClient client = new RemoteClient(playerName);
 					Point point = new Point(player.getX(), player.getY());
@@ -330,98 +326,36 @@ public class Mazewar extends JFrame {
 					
 					// Add location of other client to the queue
 					if(!ClientState.isSelfLocation(player.getHostname(), player.getPort())) {
-						//ClientState.others.add(new ClientState.ClientLocation(player.getHostname(), player.getPort()));
+						ClientState.others.add(new ClientState.ClientLocation(player.getHostname(), player.getPort(), player.getId()));
 
-						Thread t = new Thread() {
-							public void run() {
-								ClientState.others.add(new ClientState.ClientLocation(player.getHostname(), player.getPort()));
-							}
-						};
-						t.start();
 					}
 				}
+				if(self.getName().equals(playerName)) {
+					ClientState.PLAYER_ID = player.getId();
+				}
 			}
+			setNextClient();
+			TokenMaster tokenMaster = new TokenMaster();
+			tokenMaster.start();
         }
         
-        public static boolean forward() {
-        	// Send action to server 
-        	MazewarPacket packetToServer = new MazewarPacket();
-        	packetToServer.type = MazewarPacket.CLIENT_ACTION;
-        	packetToServer.player = ClientState.PLAYER_NAME;
-        	packetToServer.action = MazewarPacket.CLIENT_FORWARD;
-        	
-        	System.out.println("Forward action");
-        	
-        	ClientMulticast.mMove(packetToServer);
-        	
-        	/*try {
-				out.writeObject(packetToServer);
-				consolePrintLn(ClientState.PLAYER_NAME + ": sent action to move forward to server successfully");
-			} catch (IOException e) {
-				System.err.println("4");
-				System.err.println("ERROR: Could not write to output stream");
-				System.exit(1);
-			}*/
-        	
-        	return false;
-        }
-        
-        public static boolean backup() {
-        	/* Send action to server */
-        	MazewarPacket packetToServer = new MazewarPacket();
-        	packetToServer.type = MazewarPacket.CLIENT_ACTION;
-        	packetToServer.player = ClientState.PLAYER_NAME;
-        	packetToServer.action = MazewarPacket.CLIENT_BACKWARD;
-        	
-        	/*try {
-				out.writeObject(packetToServer);
-				consolePrintLn(ClientState.PLAYER_NAME + ": sent action to move backward to server successfully");
-			} catch (IOException e) {
-				System.err.println("5");
-				System.err.println("ERROR: Could not write to output stream");
-				System.exit(1);
-			}*/
-        	
-        	return false;
-        }
-        
-        public static boolean turnLeft() {
-        	/* Send action to server */
-        	MazewarPacket packetToServer = new MazewarPacket();
-        	packetToServer.type = MazewarPacket.CLIENT_ACTION;
-        	packetToServer.player = ClientState.PLAYER_NAME;
-        	packetToServer.action = MazewarPacket.CLIENT_LEFT;
-        	
-        	/*try {
-				out.writeObject(packetToServer);
-				consolePrintLn(ClientState.PLAYER_NAME + ": sent action to turn left to server successfully");
-			} catch (IOException e) {
-				System.err.println("6");
-				System.err.println("ERROR: Could not write to output stream");
-				System.exit(1);
-			}*/
-        	
-        	return false;
-        }
-        
-        public static boolean turnRight() {
-        	/* Send action to server */
-        	MazewarPacket packetToServer = new MazewarPacket();
-        	packetToServer.type = MazewarPacket.CLIENT_ACTION;
-        	packetToServer.player = ClientState.PLAYER_NAME;
-        	packetToServer.action = MazewarPacket.CLIENT_RIGHT;
-        	
-        	/*try {
-				out.writeObject(packetToServer);			
-				consolePrintLn(ClientState.PLAYER_NAME + ": sent action to turn right to server successfully");
-			} catch (IOException e) {
-				System.err.println("7");
-				System.err.println("ERROR: Could not write to output stream");
-				System.exit(1);
-			}*/
-        	
-        	return false;
-        }
+    	private static void setNextClient() {
+    		int nextClientId = ClientState.PLAYER_ID + 1;
+    		if(nextClientId >= SharedData.MAX_PLAYERS) {
+    			nextClientId = 0;
+    		}
+    		
+    		Iterator<ClientState.ClientLocation> others = ClientState.others.iterator();
+    		
+    		while(others.hasNext()) {
+    			ClientState.ClientLocation other = (ClientState.ClientLocation) others.next();
+    			if(other.getId() == nextClientId) {
+    				ClientState.nextClient = other;
+    				System.out.println("Set next client in the ring");
+    				break;
+    			}
+    		}
+    	}
         
         public static boolean fire() {
         	/* Send action to server */
@@ -477,81 +411,5 @@ public class Mazewar extends JFrame {
         	Mazewar.maze.removeClient(target);
         	
         	return true;
-        }
-        
-        private void checkAction(MazewarPacket packetFromServer) {
-			//SharedData.ActionInfo playerMove = packetFromServer.move;
-			SharedData.ActionInfo playerMove = ClientState.actionQueue.get(String.valueOf(ClientState.CURR_TIME));
-        	if(playerMove == null) {
-        		return;
-        	}
-			ClientState.CURR_TIME++;
-			String playerName = playerMove.getPlayerName();
-			int playerAction = playerMove.getAction();
-			//int playerTime = playerMove.getTime();
-						
-			Iterator allClients = Mazewar.maze.getClients();
-			Client player = null;
-			while(allClients.hasNext()) {
-				player = (Client) allClients.next();
-				
-				if(player.getName().equals(playerName))
-					break;
-			}
-			
-			
-			switch(playerAction) {
-				case MazewarPacket.CLIENT_FORWARD:
-					consolePrintLn("Received packet: " + playerMove.toString());
-					consolePrintLn("Action: forward");
-					player.forward();
-					break;
-				case MazewarPacket.CLIENT_BACKWARD:
-					consolePrintLn("Received packet: " + playerMove.toString());
-					consolePrintLn("Action: backward");
-					player.backup();
-					break;
-				case MazewarPacket.CLIENT_LEFT:
-					consolePrintLn("Received packet: " + playerMove.toString());
-					consolePrintLn("Action: left");
-					player.turnLeft();
-					break;
-				case MazewarPacket.CLIENT_RIGHT:
-					consolePrintLn("Received packet: " + playerMove.toString());
-					consolePrintLn("Action: right");
-					player.turnRight();
-					break;
-				case MazewarPacket.CLIENT_FIRE:
-					consolePrintLn("Received packet: " + playerMove.toString());
-					consolePrintLn("Action: fire");
-					player.fire();
-					break;
-				case MazewarPacket.CLIENT_RESPAWN:
-					consolePrintLn("Received packet: " + playerMove.toString());
-					consolePrintLn("Action: respawn");
-					PlayerMeta addPlayer = playerMove.getPlayerMeta();
-					consolePrintLn("Add player " + addPlayer.name + " at x, y positions of " + addPlayer.posX + " " + addPlayer.posY);	
-					player.respawn(addPlayer.name, new Point(addPlayer.posX, addPlayer.posY), Direction.strToDir(addPlayer.orientation));
-					break;
-				case MazewarPacket.CLIENT_QUIT:
-					consolePrintLn("Received packet: " + playerMove.toString());
-					consolePrintLn("Action: quit");
-					removePlayer(playerName);
-					//quit();
-					break;
-				default:
-					consolePrintLn("Should we have gotten here?");
-					break;
-			}
-		
-        }
-        
-        private void enqueueAction(MazewarPacket packetFromServer) {
-        	SharedData.ActionInfo playerMove = packetFromServer.move;
-			String playerName = playerMove.getPlayerName();
-			int playerAction = playerMove.getAction();
-			int playerTime = playerMove.getTime();
-						
-			ClientState.actionQueue.put(String.valueOf(playerTime), playerMove);				
         }
 }

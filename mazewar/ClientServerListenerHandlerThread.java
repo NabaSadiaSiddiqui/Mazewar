@@ -41,11 +41,8 @@ public class ClientServerListenerHandlerThread extends Thread {
 	    				Thread thread = new Thread() {
 	    						public void run() {
 	    							try {
-	    								System.out.println("Socket is not connected");
 										Mazewar.selfConn = Mazewar.selfSocket.accept();
-										System.out.println("isInputShutdown is " + Mazewar.selfConn.isInputShutdown());
 										Mazewar.selfIn = new ObjectInputStream(Mazewar.selfConn.getInputStream());
-										System.out.println("isInputShutdown is " + Mazewar.selfConn.isInputShutdown());
 					    				// Lets start the game
 					                    new ClientListenerHandlerThread().start();
 	    							} catch (IOException e) {
@@ -54,6 +51,10 @@ public class ClientServerListenerHandlerThread extends Thread {
 	    						}};
 	    				thread.start();
 	    				Mazewar.addRemoteClients(self, maze, packetFromServer);
+	    				break;
+	    			case MazewarPacket.SERVER_SET_TOKEN:
+	    				ClientState.HAVE_TOKEN = true;
+	    				System.out.println("I have the token now");
 	    				break;
     				default:
     					break;
@@ -132,7 +133,7 @@ public class ClientServerListenerHandlerThread extends Thread {
     	// Make a request to register
     	MazewarPacket packetToServer = new MazewarPacket();
     	packetToServer.type = MazewarPacket.CLIENT_REGISTER;
-    	packetToServer.playerInfo = new PlayerMeta(name, location.getX(), location.getY(), orientation, ClientState.hostname, ClientState.port);
+    	packetToServer.playerInfo = new PlayerMeta(ClientState.ID_DEFAULT, name, location.getX(), location.getY(), orientation, ClientState.hostname, ClientState.port);
     	
     	try {
     		// Register with server

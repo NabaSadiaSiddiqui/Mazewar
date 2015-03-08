@@ -1,5 +1,4 @@
 import java.io.*;
-import java.net.*;
 import java.util.Iterator;
 
 /**
@@ -13,25 +12,64 @@ public class ClientListenerHandlerThread extends Thread {
 	}
 	
 	public void run() {
-		Iterator<ClientState.ClientLocation> others = ClientState.others.iterator();
-		boolean listening = true;
-		while(listening) {
-			while(others.hasNext()) {
-				ClientState.ClientLocation other = others.next();
-				try {
-					MazewarPacket packetFromClient = (MazewarPacket) Mazewar.selfIn.readObject();
-	
-					if(packetFromClient != null) {
-						System.out.println("Its not null");
-					}
-				} catch (IOException e) {
-					e.printStackTrace();
-				} catch (ClassNotFoundException e) {
-					e.printStackTrace();
+		try {
+			MazewarPacket packetFromClient = (MazewarPacket) Mazewar.selfIn.readObject();
+
+			while(packetFromClient != null) {
+				int type = packetFromClient.type;
+				
+				switch(type) {
+					case MazewarPacket.CLIENT_TOKEN_EXCHANGE:
+						ClientState.tokenLock.lock();
+						ClientState.HAVE_TOKEN = true;
+						ClientState.tokenLock.unlock();
+						break;
+					case MazewarPacket.CLIENT_ACTION:
+						
+						int action = packetFromClient.action;
+						String playerName = packetFromClient.player;
+						Iterator allClients = Mazewar.maze.getClients();
+						Client player = null;
+						while(allClients.hasNext()) {
+							player = (Client) allClients.next();
+							
+							if(player.getName().equals(playerName))
+								break;
+						}
+						
+						switch(action) {
+							case MazewarPacket.CLIENT_FORWARD:
+								Mazewar.consolePrintLn("Action: forward");
+								player.forward();
+								break;
+							case MazewarPacket.CLIENT_BACKWARD:
+								Mazewar.consolePrintLn("Action: backward");
+								player.backup();
+								break;
+							case MazewarPacket.CLIENT_LEFT:
+								Mazewar.consolePrintLn("Action: left");
+								player.turnLeft();
+								break;
+							case MazewarPacket.CLIENT_RIGHT:
+								Mazewar.consolePrintLn("Action: right");
+								player.turnRight();
+								break;
+							default:
+								Mazewar.consolePrint("Action: unknown");
+								break;
+						}
+						break;
+					default:
+						System.out.println("Got some mysterious token");
+						break;
 				}
+				
+				packetFromClient = (MazewarPacket) Mazewar.selfIn.readObject();
 			}
-			others = ClientState.others.iterator();
+		} catch (IOException e) {
+			e.printStackTrace();
+		} catch (ClassNotFoundException e) {
+			e.printStackTrace();
 		}
 	}
-
 }

@@ -4,7 +4,6 @@ import java.io.ObjectOutputStream;
 import java.net.*;
 import java.util.Enumeration;
 import java.util.Iterator;
-import java.util.concurrent.BlockingQueue;
 
 public class MazewarServerHandlerThread extends Thread {
 	private Socket socket = null;
@@ -40,7 +39,7 @@ public class MazewarServerHandlerThread extends Thread {
 
 					boolean cellBusy = false;
 					
-					Iterator allPoints = ServerState.occupiedCells.iterator();
+					Iterator<Point> allPoints = ServerState.occupiedCells.iterator();
 					while(allPoints.hasNext() && !cellBusy) {
 						Point ref = (Point) allPoints.next();
 						int xRef = ref.getX();
@@ -66,22 +65,22 @@ public class MazewarServerHandlerThread extends Thread {
 					PlayerMeta player = packetFromClient.playerInfo;
 					
 					if(ServerState.allPlayers.size() < SharedData.MAX_PLAYERS) { // Add player to hashmap
-
-						ServerState.PlayerDetails detail = new ServerState.PlayerDetails(player.port, player.hostname, player.posX, player.posY, player.orientation);
-						ServerState.allPlayers.put(player.name, detail);
-						ServerState.outAll.put(player.name, toClient);
+ 
+						
+						PlayerMeta pMet = new PlayerMeta(ServerState.clientId++,
+								player.getName(),
+								player.getX(),
+								player.getY(),
+								player.getOrientation(),
+								player.getHostname(),
+								player.getPort());
+						
+						ServerState.allPlayers.put(player.getName(), pMet);
+						ServerState.outAll.put(player.getName(), toClient);
 						
 						SharedData.CURR_PLAYERS_COUNT++;
 
-					}
-					
-					/*if(ServerState.players.size() < SharedData.MAX_PLAYERS) { // Add player to the queue if possible
-						ServerState.players.add(player);
-						ServerState.outAll.put(player.name, toClient);
-						
-						SharedData.CURR_PLAYERS_COUNT++;
-						
-					}*/ else { // Report error
+					} else { // Report error
 						gotServerError = true;
 						packetToClient.type = MazewarPacket.SERVER_ERROR;
 						packetToClient.error_code = MazewarPacket.ERROR_MAX_PLAYER_CAPACITY_REACHED;
@@ -191,8 +190,17 @@ public class MazewarServerHandlerThread extends Thread {
 					e.printStackTrace();
 				}
 				
-				if(i==SharedData.MAX_PLAYERS) {
+				if((i+1)==SharedData.MAX_PLAYERS) {
 					ServerState.PLAYERS_ADDED = true;
+					
+					packetToClient = new MazewarPacket();
+					packetToClient.type = MazewarPacket.SERVER_SET_TOKEN;
+					try {
+						System.out.println("Sending token");
+						toClient.writeObject(packetToClient);
+					} catch (IOException e) {
+						e.printStackTrace();
+					}
 				}
 			}
 		}

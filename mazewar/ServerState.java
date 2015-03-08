@@ -52,7 +52,7 @@ public class ServerState {
 		private String hostname;
 		private String orientation;
 		
-		public PlayerDetails(int port, String hostname, int x, int y, String orientation) {
+		public PlayerDetails(int id, int port, String hostname, int x, int y, String orientation) {
 			this.port = port;
 			this.hostname = hostname;
 			this.x = x;
@@ -84,7 +84,11 @@ public class ServerState {
 	/**
 	 * Hashmap to store all players in the game
 	 */
-	static ConcurrentHashMap<String, PlayerDetails> allPlayers = new ConcurrentHashMap<String, PlayerDetails>();
+	static ConcurrentHashMap<String, PlayerMeta> allPlayers = new ConcurrentHashMap<String, PlayerMeta>();
 
+	/**
+	 * A uniformly increasing integer which is assigned to a client
+	 */
+	static int clientId = 0;
 	
 }

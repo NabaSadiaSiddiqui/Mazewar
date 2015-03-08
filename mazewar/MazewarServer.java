@@ -1,6 +1,5 @@
 import java.io.IOException;
 import java.net.ServerSocket;
-import java.util.concurrent.ArrayBlockingQueue;
 
 public class MazewarServer {
 
@@ -20,9 +19,7 @@ public class MazewarServer {
 			System.err.println("ERROR: Could not listen on port!");
 			System.exit(-1);
 		}
-		
-		new MazewarServerBroadcastThread().start();
-				
+						
 		while(listening) {
 			try {
 				new MazewarServerHandlerThread(serverSocket.accept()).start();
