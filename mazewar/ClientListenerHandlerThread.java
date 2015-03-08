@@ -54,6 +54,10 @@ public class ClientListenerHandlerThread extends Thread {
 								Mazewar.consolePrintLn("Action: right");
 								player.turnRight();
 								break;
+							case MazewarPacket.CLIENT_FIRE:
+								Mazewar.consolePrint("Action: fire");
+								player.fire();
+								break;
 							default:
 								Mazewar.consolePrint("Action: unknown");
 								break;

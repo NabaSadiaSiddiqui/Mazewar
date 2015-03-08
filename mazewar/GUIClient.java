@@ -41,26 +41,25 @@ public class GUIClient extends LocalClient implements KeyListener {
          * @param e The {@link KeyEvent} that occurred.
          */
         public void keyPressed(KeyEvent e) {
-                // If the user pressed Q, invoke the cleanup code and quit. 
-                if((e.getKeyChar() == 'q') || (e.getKeyChar() == 'Q')) {
-                    Mazewar.quit();
-                // Up-arrow moves forward.
-                } else if(e.getKeyCode() == KeyEvent.VK_UP) {
-                	ClientMulticast.mMove(MazewarPacket.CLIENT_FORWARD);
-                // Down-arrow moves backward.
-                } else if(e.getKeyCode() == KeyEvent.VK_DOWN) {
-                	ClientMulticast.mMove(MazewarPacket.CLIENT_BACKWARD);
-                // Left-arrow turns left.
-                } else if(e.getKeyCode() == KeyEvent.VK_LEFT) {
-                	ClientMulticast.mMove(MazewarPacket.CLIENT_LEFT);
-                // Right-arrow turns right.
-                } else if(e.getKeyCode() == KeyEvent.VK_RIGHT) {
-                	ClientMulticast.mMove(MazewarPacket.CLIENT_RIGHT);
-                // Spacebar fires.
-                } else if(e.getKeyCode() == KeyEvent.VK_SPACE) {
-                    Mazewar.fire();    
-                	//fire();
-                }
+            // If the user pressed Q, invoke the cleanup code and quit. 
+            if((e.getKeyChar() == 'q') || (e.getKeyChar() == 'Q')) {
+                Mazewar.quit();
+            // Up-arrow moves forward.
+            } else if(e.getKeyCode() == KeyEvent.VK_UP) {
+            	ClientMulticast.mMove(MazewarPacket.CLIENT_FORWARD);
+            // Down-arrow moves backward.
+            } else if(e.getKeyCode() == KeyEvent.VK_DOWN) {
+            	ClientMulticast.mMove(MazewarPacket.CLIENT_BACKWARD);
+            // Left-arrow turns left.
+            } else if(e.getKeyCode() == KeyEvent.VK_LEFT) {
+            	ClientMulticast.mMove(MazewarPacket.CLIENT_LEFT);
+            // Right-arrow turns right.
+            } else if(e.getKeyCode() == KeyEvent.VK_RIGHT) {
+            	ClientMulticast.mMove(MazewarPacket.CLIENT_RIGHT);
+            // Spacebar fires.
+            } else if(e.getKeyCode() == KeyEvent.VK_SPACE) {
+            	ClientMulticast.mMove(MazewarPacket.CLIENT_FIRE);
+            }
         }
         
         /**

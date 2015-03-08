@@ -33,6 +33,9 @@ public class ClientMulticast {
 				case MazewarPacket.CLIENT_RIGHT:
 		        	packetToOthers.action = action;
 		        	break;
+				case MazewarPacket.CLIENT_FIRE:
+					packetToOthers.action = action;
+					break;
 				default:
 					System.err.println("What action did you just perform?!?!");
 					break;
@@ -76,6 +79,9 @@ public class ClientMulticast {
 					case MazewarPacket.CLIENT_RIGHT:
 						player.turnRight();
 			        	break;
+					case MazewarPacket.CLIENT_FIRE:
+						player.fire();
+						break;
 			        default:
 						System.err.println("What action did you just perform?!?!");
 						break;
