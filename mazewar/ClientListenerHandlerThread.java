@@ -47,14 +47,17 @@ public class ClientListenerHandlerThread extends Thread {
 							case MazewarPacket.CLIENT_FORWARD:
 								Mazewar.consolePrintLn("Action: forward");
 								player.forward();
+								ClientMulticast.sendAck();
 								break;
 							case MazewarPacket.CLIENT_BACKWARD:
 								Mazewar.consolePrintLn("Action: backward");
 								player.backup();
+								ClientMulticast.sendAck();
 								break;
 							case MazewarPacket.CLIENT_LEFT:
 								Mazewar.consolePrintLn("Action: left");
 								player.turnLeft();
+								ClientMulticast.sendAck();
 								break;
 							case MazewarPacket.CLIENT_RIGHT:
 								Mazewar.consolePrintLn("Action: right");
@@ -63,6 +66,7 @@ public class ClientListenerHandlerThread extends Thread {
 							case MazewarPacket.CLIENT_FIRE:
 								Mazewar.consolePrintLn("Action: fire");
 								player.fire();
+								ClientMulticast.sendAck();
 								break;
 							case MazewarPacket.CLIENT_RESPAWN:
 								Mazewar.consolePrintLn("Action: respawn");
@@ -71,6 +75,7 @@ public class ClientListenerHandlerThread extends Thread {
 								Point p = new Point(pInfo.getX(), pInfo.getY());
 								Direction d = Direction.strToDir(pInfo.getOrientation());
 								player.respawn(name, p, d);
+								ClientMulticast.sendAck();
 								break;
 							case MazewarPacket.CLIENT_QUIT:
 								Mazewar.consolePrintLn("Action: quit");
@@ -80,6 +85,15 @@ public class ClientListenerHandlerThread extends Thread {
 							default:
 								Mazewar.consolePrint("Action: unknown");
 								break;
+						}
+						break;
+					case MazewarPacket.CLIENT_ACK:
+						System.out.println("Got an ack code");
+						ClientState.nAcks++;
+						if(ClientState.nAcks == (SharedData.MAX_PLAYERS-1)) {
+							ClientState.nAcks = 0;
+							TokenMaster.unsetNeedToken();
+							TokenMaster.passToken();
 						}
 						break;
 					default:

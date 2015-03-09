@@ -21,7 +21,6 @@ public class TokenMaster extends Thread {
 			ClientState.HAVE_TOKEN = false;
 			MazewarPacket packetToNext = new MazewarPacket();
 			packetToNext.type = MazewarPacket.CLIENT_TOKEN_EXCHANGE;
-			System.out.println(ClientState.nextClient.getName());
 			ClientState.nextClient.getOut().writeObject(packetToNext);
 			ClientState.tokenLock.unlock();
 		} catch (IOException e) {

@@ -152,8 +152,24 @@ public class ClientMulticast {
 			}
 			ClientState.tokenLock.unlock();
 		}
+	}
+	
+	public static void sendAck() {
 		
-		TokenMaster.unsetNeedToken();
-		TokenMaster.passToken();
+		MazewarPacket packetToOthers = new MazewarPacket();
+		packetToOthers.type = MazewarPacket.CLIENT_ACK;
+    	packetToOthers.player = ClientState.PLAYER_NAME;
+		
+		Iterator<ClientState.ClientLocation> others = ClientState.others.iterator();
+		while(others.hasNext()) {
+			ClientState.ClientLocation other = others.next();
+			try {
+				other.getOut().writeObject(packetToOthers);
+				Mazewar.consolePrintLn(ClientState.PLAYER_NAME + ": sent ack to others");
+
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
 	}
 }

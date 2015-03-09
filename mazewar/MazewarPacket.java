@@ -89,7 +89,7 @@ public class MazewarPacket implements Serializable {
 	// Client assigning the next player the token
 	public static final int CLIENT_TOKEN_EXCHANGE = 111;
 	// Client ack code to player that sent out an action
-	//public static final int CLIENT_ACK = 112;
+	public static final int CLIENT_ACK = 112;
 	
 	// Server ack code to player wanting to join the game
 	public static final int SERVER_ACK_JOIN = 201;

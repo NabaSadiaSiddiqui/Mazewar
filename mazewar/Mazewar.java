@@ -306,6 +306,7 @@ public class Mazewar extends JFrame {
 					
 					// Add location of other client to the queue
 					if(!ClientState.isSelfLocation(player.getHostname(), player.getPort())) {
+						System.out.println("Adding " + player.getName());
 						ClientState.others.add(new ClientState.ClientLocation(player.getHostname(), player.getPort(), player.getId(), player.getName()));
 
 					}
@@ -329,7 +330,7 @@ public class Mazewar extends JFrame {
     			ClientState.ClientLocation other = (ClientState.ClientLocation) others.next();
     			if(other.getId() == nextClientId) {
     				ClientState.nextClient = other;
-    				System.out.println("Set next client in the ring");
+    				System.out.println("Set next client in the ring to " + other.getName());
     				break;
     			}
     		}
