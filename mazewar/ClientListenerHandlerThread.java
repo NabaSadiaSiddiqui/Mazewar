@@ -86,6 +86,7 @@ public class ClientListenerHandlerThread extends Thread {
 								Mazewar.consolePrint("Action: unknown");
 								break;
 						}
+						//ClientMulticast.sendAck();
 						break;
 					case MazewarPacket.CLIENT_ACK:
 						System.out.println("Got an ack code");
