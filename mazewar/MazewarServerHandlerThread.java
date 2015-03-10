@@ -25,7 +25,7 @@ public class MazewarServerHandlerThread extends Thread {
 		
 			/* Stream to write back to client */
 			ObjectOutputStream toClient = new ObjectOutputStream(socket.getOutputStream());
-				
+			
 			while(!gotQuitPacket && (packetFromClient = (MazewarPacket) fromClient.readObject()) != null) {
 				/* Create a packet to send reply back to client */
 				MazewarPacket packetToClient = new MazewarPacket();

@@ -39,6 +39,9 @@ public class ClientState {
 	// Lock to manage access to the token
 	public static Lock tokenLock = new ReentrantLock();
 	
+	// Lock to manage access to the queue of peers
+	public static Lock peerLock = new ReentrantLock();
+	
 	// State to indicate how many ACK codes it has received
 	public static int nAcks = 0;
 	
@@ -58,7 +61,7 @@ public class ClientState {
 	/**
 	 * Queue of all other players in the game and their location
 	 */
-	static BlockingQueue<ClientLocation> others = new ArrayBlockingQueue<ClientLocation>(SharedData.MAX_PLAYERS-1);
+	//static BlockingQueue<ClientLocation> others = new ArrayBlockingQueue<ClientLocation>(SharedData.MAX_PLAYERS-1);
 
 	static class ClientLocation {
 		private static String hostname, name;

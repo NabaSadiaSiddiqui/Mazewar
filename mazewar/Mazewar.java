@@ -26,7 +26,6 @@ import javax.swing.JOptionPane;
 import java.awt.GridBagLayout;
 import java.awt.GridBagConstraints;
 import javax.swing.BorderFactory;
-
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -37,6 +36,7 @@ import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.Iterator;
+import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -65,6 +65,11 @@ public class Mazewar extends JFrame {
 		 * State to indicate if socket is accepting connections
 		 */
 		public static boolean isOpen = false;
+		
+		/**
+		 * Queue of all other players in the game and their location
+		 */
+		private static BlockingQueue<ClientState.ClientLocation> peers = null;
 
         /**
          * The default width of the {@link Maze}.
@@ -174,7 +179,7 @@ public class Mazewar extends JFrame {
                 this.addKeyListener(guiClient);
                 
                 // Lets set up and register with the server
-                new ClientServerListenerHandlerThread(socket, guiClient, maze).start();
+                new ClientServerListenerHandlerThread(socket, guiClient, maze, peers).start();
                 
                 // Use braces to force constructors not to be called at the beginning of the
                 // constructor.
@@ -254,6 +259,8 @@ public class Mazewar extends JFrame {
         	
         	String hostnameLookupServer = "localhost";
 			int portLookupServer = 8080;
+			
+			peers = new ArrayBlockingQueue<ClientState.ClientLocation>(5);
 						
 			try {
 				if(args.length == 4) {
@@ -276,7 +283,7 @@ public class Mazewar extends JFrame {
             new Mazewar(hostnameLookupServer, portLookupServer);
         }
         
-        private static void initNetwork(String hostname, int port) {
+        private void initNetwork(String hostname, int port) {
         	try {
     			socket = new Socket(hostname, port);
     		} catch(UnknownHostException e) {
@@ -288,58 +295,12 @@ public class Mazewar extends JFrame {
     		}
         }
         
-        public static void addRemoteClients(Client self, Maze maze, MazewarPacket packetFromServer) {
-        	ConcurrentHashMap<String, PlayerMeta> activePlayers = packetFromServer.allPlayers;
-			
-			Enumeration<String> clientKeys = activePlayers.keys();
-						
-			for(int i=0; i<SharedData.MAX_PLAYERS; i++) {
-				String playerName = clientKeys.nextElement();
-
-				final PlayerMeta player = (PlayerMeta) activePlayers.get(playerName);
-				
-				if(!self.getName().equals(playerName)) {
-					RemoteClient client = new RemoteClient(playerName);
-					Point point = new Point(player.getX(), player.getY());
-					Direction direction = Direction.strToDir(player.getOrientation());
-					maze.addClientAtPointWithDirection((Client) client, point, direction);
-					
-					// Add location of other client to the queue
-					if(!ClientState.isSelfLocation(player.getHostname(), player.getPort())) {
-						System.out.println("Adding " + player.getName());
-						ClientState.others.add(new ClientState.ClientLocation(player.getHostname(), player.getPort(), player.getId(), player.getName()));
-
-					}
-				}
-				if(self.getName().equals(playerName)) {
-					ClientState.PLAYER_ID = player.getId();
-				}
-			}
-			setNextClient();
-		}
         
-    	private static void setNextClient() {
-    		int nextClientId = ClientState.PLAYER_ID + 1;
-    		if(nextClientId >= SharedData.MAX_PLAYERS) {
-    			nextClientId = 0;
-    		}
-    		
-    		Iterator<ClientState.ClientLocation> others = ClientState.others.iterator();
-    		
-    		while(others.hasNext()) {
-    			ClientState.ClientLocation other = (ClientState.ClientLocation) others.next();
-    			if(other.getId() == nextClientId) {
-    				ClientState.nextClient = other;
-    				System.out.println("Set next client in the ring to " + other.getName());
-    				break;
-    			}
-    		}
-    	}
         
         public static void respawn(Point point, Direction d) {
         	System.out.println("Mazewar: respawn");
         	PlayerMeta newPos = new PlayerMeta(ClientState.PLAYER_ID, ClientState.PLAYER_NAME, point.getX(), point.getY(), d.toString(), ClientState.hostname, ClientState.port);
-        	ClientMulticast.mMove(MazewarPacket.CLIENT_RESPAWN, newPos);
+        	new ClientMulticast(peers).mMove(MazewarPacket.CLIENT_RESPAWN, newPos);
         }
         
         public static boolean removePlayer(String name) {
@@ -355,5 +316,29 @@ public class Mazewar extends JFrame {
         	Mazewar.maze.removeClient(target);
         	
         	return true;
+        }
+        
+        public static void mQuit() {
+        	new ClientMulticast(peers).mMove(MazewarPacket.CLIENT_QUIT, null);
+        }
+        
+        public static void mForward() {
+        	new ClientMulticast(peers).mMove(MazewarPacket.CLIENT_FORWARD, null);
+        }
+        
+        public static void mBackup() {
+        	new ClientMulticast(peers).mMove(MazewarPacket.CLIENT_BACKWARD, null);
+        }
+        
+        public static void mFire() {
+        	new ClientMulticast(peers).mMove(MazewarPacket.CLIENT_FIRE, null);
+        }
+        
+        public static void mLeft() {
+        	new ClientMulticast(peers).mMove(MazewarPacket.CLIENT_LEFT, null);
+        }
+        
+        public static void mRight() {
+        	new ClientMulticast(peers).mMove(MazewarPacket.CLIENT_RIGHT, null);
         }
 }

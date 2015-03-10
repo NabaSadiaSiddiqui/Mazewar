@@ -1,14 +1,16 @@
 import java.io.IOException;
 import java.util.Iterator;
+import java.util.concurrent.BlockingQueue;
 
 
 public class ClientMulticast {
+	private BlockingQueue<ClientState.ClientLocation> peers;
 
-	public ClientMulticast() {
-		
+	public ClientMulticast(BlockingQueue<ClientState.ClientLocation> peers) {
+		this.peers = peers;
 	}
 	
-	public static void mMove(int action, PlayerMeta newPosition) {
+	public void mMove(int action, PlayerMeta newPosition) {
 		TokenMaster.setNeedToken();
 			
 		MazewarPacket packetToOthers = new MazewarPacket();
@@ -45,7 +47,7 @@ public class ClientMulticast {
 		}
 	
 		if(action == MazewarPacket.CLIENT_RESPAWN) {
-			Iterator<ClientState.ClientLocation> others = ClientState.others.iterator();
+			Iterator<ClientState.ClientLocation> others = peers.iterator();
 			while(others.hasNext()) {
 				ClientState.ClientLocation other = others.next();
 				try {
@@ -81,7 +83,7 @@ public class ClientMulticast {
 					break;
 			}
 		} else if(action == MazewarPacket.CLIENT_QUIT) {
-			Iterator<ClientState.ClientLocation> others = ClientState.others.iterator();
+			Iterator<ClientState.ClientLocation> others = peers.iterator();
 			while(others.hasNext()) {
 				ClientState.ClientLocation other = others.next();
 				try {
@@ -97,7 +99,7 @@ public class ClientMulticast {
 		} else {
 			ClientState.tokenLock.lock();
 			if(ClientState.HAVE_TOKEN) {
-				Iterator<ClientState.ClientLocation> others = ClientState.others.iterator();
+				Iterator<ClientState.ClientLocation> others = peers.iterator();
 				while(others.hasNext()) {
 					ClientState.ClientLocation other = others.next();
 					try {
@@ -154,13 +156,13 @@ public class ClientMulticast {
 		}
 	}
 	
-	public static void sendAck() {
+	public void sendAck() {
 		
 		MazewarPacket packetToOthers = new MazewarPacket();
 		packetToOthers.type = MazewarPacket.CLIENT_ACK;
     	packetToOthers.player = ClientState.PLAYER_NAME;
 		
-		Iterator<ClientState.ClientLocation> others = ClientState.others.iterator();
+		Iterator<ClientState.ClientLocation> others = peers.iterator();
 		while(others.hasNext()) {
 			ClientState.ClientLocation other = others.next();
 			try {

@@ -1,6 +1,10 @@
 import java.io.*;
 import java.net.*;
 import java.util.ArrayList;
+import java.util.Enumeration;
+import java.util.Iterator;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class ClientServerListenerHandlerThread extends Thread {
 	
@@ -8,14 +12,16 @@ public class ClientServerListenerHandlerThread extends Thread {
 	private ObjectInputStream in = null;
 	private Client self;
 	private Maze maze;
+	private BlockingQueue<ClientState.ClientLocation> peers;
 	
-	public ClientServerListenerHandlerThread(Socket socket, Client self, Maze maze) {
+	public ClientServerListenerHandlerThread(Socket socket, Client self, Maze maze, BlockingQueue<ClientState.ClientLocation> peers) {
 		super("ClientServerListenerHandlerThread");
 		try {
 			out = new ObjectOutputStream(socket.getOutputStream());
 			in = new ObjectInputStream(socket.getInputStream());
 			this.self = self;
 			this.maze = maze;
+			this.peers = peers;
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -44,13 +50,13 @@ public class ClientServerListenerHandlerThread extends Thread {
 										Mazewar.selfConn = Mazewar.selfSocket.accept();
 										Mazewar.selfIn = new ObjectInputStream(Mazewar.selfConn.getInputStream());
 					    				// Lets start the game
-					                    new ClientListenerHandlerThread().start();
+					                    new ClientListenerHandlerThread(peers).start();
 	    							} catch (IOException e) {
 										e.printStackTrace();
 									}
 	    						}};
 	    				thread.start();
-	    				Mazewar.addRemoteClients(self, maze, packetFromServer);
+	    				addRemoteClients(self, maze, packetFromServer);
 	    				break;
 	    			case MazewarPacket.SERVER_SET_TOKEN:
 	    				TokenMaster.setHaveToken();
@@ -155,5 +161,53 @@ public class ClientServerListenerHandlerThread extends Thread {
 			System.err.println("ERROR: MazewarPacket class does not exist...uh oh");
 			System.exit(1);
 		}   
+	}
+	
+	private void addRemoteClients(Client self, Maze maze, MazewarPacket packetFromServer) {
+    	ConcurrentHashMap<String, PlayerMeta> activePlayers = packetFromServer.allPlayers;
+		
+		Enumeration<String> clientKeys = activePlayers.keys();
+		
+		int nextClientId = ClientState.PLAYER_ID + 1;
+		if(nextClientId >= SharedData.MAX_PLAYERS) {
+			nextClientId = 0;
+		}
+		
+		System.out.println("Self client id is " + ClientState.PLAYER_ID);
+		System.out.println("Next client id is " + nextClientId);
+		
+		
+		for(int i=0; i<SharedData.MAX_PLAYERS; i++) {
+			String playerName = clientKeys.nextElement();
+
+			final PlayerMeta player = (PlayerMeta) activePlayers.get(playerName);
+			
+			if(!self.getName().equals(playerName)) {
+				RemoteClient client = new RemoteClient(playerName);
+				Point point = new Point(player.getX(), player.getY());
+				Direction direction = Direction.strToDir(player.getOrientation());
+				maze.addClientAtPointWithDirection((Client) client, point, direction);
+				
+				// Add location of other client to the queue
+				if(!ClientState.isSelfLocation(player.getHostname(), player.getPort())) {
+					ClientState.ClientLocation other = new ClientState.ClientLocation(player.getHostname(), player.getPort(), player.getId(), player.getName());
+					boolean added = peers.add(other);
+					
+					if(added) {
+						System.out.println("Successfully added " + player.getId());
+					} else {
+						System.out.println("Error adding " + player.getId());
+					}
+					
+					if(player.getId()==nextClientId) {
+						ClientState.nextClient = other;
+						System.out.println("Set next client in the ring to " + player.getName());
+					}
+				}
+			}
+			if(self.getName().equals(playerName)) {
+				ClientState.PLAYER_ID = player.getId();
+			}
+		}
 	}
 }
