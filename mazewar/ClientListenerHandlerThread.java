@@ -1,6 +1,4 @@
 import java.io.*;
-import java.net.ServerSocket;
-import java.net.Socket;
 import java.util.Iterator;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.locks.Lock;
@@ -19,11 +17,9 @@ public class ClientListenerHandlerThread extends Thread {
 	/**
 	 * Socket through which communication will be made from other clients
 	 */
-	private ServerSocket selfSocket = null;
-	private Socket selfConn = null;
 	private ObjectInputStream selfIn = null;
 	
-	public ClientListenerHandlerThread(BlockingQueue<ClientLocation> peers, GUIClient gui, ClientLocation nextClient, Lock tokenLock, ServerSocket selfSocket, Socket selfConn, ObjectInputStream selfIn, TokenMaster tokenMaster) {
+	public ClientListenerHandlerThread(BlockingQueue<ClientLocation> peers, GUIClient gui, ClientLocation nextClient, Lock tokenLock, ObjectInputStream selfIn, TokenMaster tokenMaster) {
 		super("ClientListenerHandlerThread");
 		System.out.println("Created thread to listen to incoming actions from other players in the game");
 		this.peers = peers;
@@ -31,8 +27,6 @@ public class ClientListenerHandlerThread extends Thread {
 		this.next = nextClient;
 		this.tokenLock = tokenLock;
 		this.tokenMaster = tokenMaster;
-		this.selfSocket = selfSocket;
-		this.selfConn = selfConn;
 		this.selfIn = selfIn;
 	}
 	
@@ -159,11 +153,6 @@ public class ClientListenerHandlerThread extends Thread {
 		if(nextClientId >= SharedData.MAX_PLAYERS) {
 			nextClientId = 0;
 		}
-		
-		/*if(nextClientId == ClientState.PLAYER_ID) {
-			ClientState.nextClient = null;
-			return;
-		}*/
 		
 		Iterator<ClientLocation> others = peers.iterator();
 		

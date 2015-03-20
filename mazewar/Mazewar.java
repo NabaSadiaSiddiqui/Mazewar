@@ -72,7 +72,11 @@ public class Mazewar extends JFrame {
 		// Lock to manage access to the token
 		private static Lock tokenLock;
 		// Token master to manage token
-		private static TokenMaster tokenMaster;
+		public static TokenMaster tokenMaster;
+		// Object to reference the client thread
+		//public static ClientListenerHandlerThread clientThread = null;
+		// Object to manage multicast events
+		//public static ClientMulticast mCast;
 		
         /**
          * The default width of the {@link Maze}.
@@ -184,18 +188,7 @@ public class Mazewar extends JFrame {
                 guiClient.setPort(selfPort);
                 
                 // Lets set up and register with the server
-                new ClientServerListenerHandlerThread(socket, guiClient, maze, peers, nextClient, tokenLock, selfSocket, selfConn, selfIn, tokenMaster).start();
-                
-                // Use braces to force constructors not to be called at the beginning of the
-                // constructor.
-                /*{
-                        maze.addClient(new RobotClient("Norby"));
-                        maze.addClient(new RobotClient("Robbie"));
-                        maze.addClient(new RobotClient("Clango"));
-                        maze.addClient(new RobotClient("Marvin"));
-                }*/
-
-                
+                new ClientServerListenerHandlerThread(socket, guiClient, maze, peers, nextClient, tokenLock, selfSocket, selfConn, selfIn, tokenMaster).start();  
                 // Create the panel that will display the maze.
                 overheadPanel = new OverheadMazePanel(maze, guiClient);
                 assert(overheadPanel != null);
@@ -267,11 +260,11 @@ public class Mazewar extends JFrame {
 			String hostname = null;
 			int port = -1;
 			
-			peers = new ArrayBlockingQueue<ClientLocation>(5);
+			peers = new ArrayBlockingQueue<ClientLocation>(SharedData.MAX_PLAYERS-1);
 			
 			tokenLock = new ReentrantLock();
 			tokenMaster = new TokenMaster(tokenLock);
-			
+						
 			try {
 				if(args.length == 4) {
 					hostnameLookupServer = args[0];
@@ -332,7 +325,7 @@ public class Mazewar extends JFrame {
         }
         
         public static void mForward() {
-        	new ClientMulticast(peers, guiClient, tokenLock).mMove(MazewarPacket.CLIENT_FORWARD, null, tokenMaster);
+        	//Mazewar.mCast.mMove(MazewarPacket.CLIENT_FORWARD, null, Mazewar.tokenMaster);
         }
         
         public static void mBackup() {

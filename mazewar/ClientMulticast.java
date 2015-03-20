@@ -6,7 +6,6 @@ import java.util.concurrent.locks.Lock;
 public class ClientMulticast {
 	private BlockingQueue<ClientLocation> peers;
 	private GUIClient self;
-	
 	// Lock to manage access to the token
 	private Lock tokenLock;
 	
@@ -17,6 +16,7 @@ public class ClientMulticast {
 	}
 	
 	public void mMove(int action, PlayerMeta newPosition, TokenMaster tokenMaster) {
+		System.out.println("Send action to others");
 		tokenMaster.setNeedToken();
 			
 		MazewarPacket packetToOthers = new MazewarPacket();
@@ -65,7 +65,6 @@ public class ClientMulticast {
 				}
 			}
 			
-			
 			String playerName = self.getName();
 			Iterator allClients = Mazewar.maze.getClients();
 			Client player = null;
@@ -103,10 +102,15 @@ public class ClientMulticast {
 			
 			Mazewar.quit();
 		} else {
+			System.out.println("In else");
 			tokenLock.lock();
+			System.out.println("Acquired lock");
 			if(tokenMaster.haveToken()) {
+				System.out.println("Size of peers is " + peers.size());
 				Iterator<ClientLocation> others = peers.iterator();
+				System.out.println("Before while loop");
 				while(others.hasNext()) {
+					System.out.println("Inside while loop");
 					ClientLocation other = others.next();
 					try {
 						other.getOut().writeObject(packetToOthers);
@@ -116,7 +120,7 @@ public class ClientMulticast {
 						e.printStackTrace();
 					}
 				}
-				
+				System.out.println("End of while loop");
 				
 				String playerName = self.getName();
 				Iterator allClients = Mazewar.maze.getClients();
@@ -163,7 +167,6 @@ public class ClientMulticast {
 	}
 	
 	public void sendAck() {
-		
 		MazewarPacket packetToOthers = new MazewarPacket();
 		packetToOthers.type = MazewarPacket.CLIENT_ACK;
     	packetToOthers.player = Mazewar.guiClient.getName();

@@ -1,16 +1,10 @@
 import java.io.*;
 import java.net.*;
-import java.util.*;
-import java.util.concurrent.ArrayBlockingQueue;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
 
 public class ClientLocation {
-	private static String hostname, name;
-	private static int port;
+	private String name;
+	// Unique id of the client, assigned by the server
+	private int id;
 	
 	/**
 	 * Socket for communication with the client
@@ -22,12 +16,7 @@ public class ClientLocation {
 	private static ObjectOutputStream out = null;
 	private static ObjectInputStream in = null;
 	
-	// Unique id of the client, assigned by the server
-	private static int id;
-	
 	public ClientLocation(String hostname, int port, int id, String name) {
-		this.hostname = hostname;
-		this.port = port;
 		this.id = id;
 		this.name = name;
 		

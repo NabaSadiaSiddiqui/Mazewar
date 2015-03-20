@@ -1,7 +1,7 @@
 import java.io.*;
 import java.util.concurrent.locks.Lock;
 
-public class TokenMaster extends Thread {
+public class TokenMaster {
 	//private ClientState.ClientLocation next;
 	private Lock tokenLock;
 	// State indicates if player has the token
@@ -10,18 +10,11 @@ public class TokenMaster extends Thread {
 	private boolean NEED_TOKEN = false;
 	
 	public TokenMaster(Lock tokenLock) {
-		super("TokenMaster");
 		this.tokenLock = tokenLock;
 	}
 	
-	public void run() {
-		if(!needToken() && haveToken()) { // dont need it BUT have it
-			System.out.println("Passing token to next player in the ring");
-			//passToken();
-		}
-	}
-	
 	public void passToken(ClientLocation next) {
+		System.out.println("Pass token to next client");
 		if(next == null) {
 			return;
 		}

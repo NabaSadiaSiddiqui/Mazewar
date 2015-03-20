@@ -68,7 +68,7 @@ public class ClientServerListenerHandlerThread extends Thread {
 										selfConn = selfSocket.accept();
 										selfIn = new ObjectInputStream(selfConn.getInputStream());
 					    				// Lets start the game
-					                    new ClientListenerHandlerThread(peers, self, next, tokenLock, selfSocket, selfConn, selfIn, tokenMaster).start();
+										new ClientListenerHandlerThread(peers, self, next, tokenLock, selfIn, tokenMaster).start();
 	    							} catch (IOException e) {
 										e.printStackTrace();
 									}
@@ -79,7 +79,6 @@ public class ClientServerListenerHandlerThread extends Thread {
 	    				break;
 	    			case MazewarPacket.SERVER_SET_TOKEN:
 	    				tokenMaster.setHaveToken();
-	    				new TokenMaster(tokenLock).start();
 	    				break;
     				default:
     					break;
