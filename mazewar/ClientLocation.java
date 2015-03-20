@@ -21,7 +21,11 @@ public class ClientLocation {
 		this.name = name;
 		
 		try {
+			System.out.println("ClientLocation::opening socket to speak to");
 			socket = new Socket(hostname, port);
+			out = new ObjectOutputStream(socket.getOutputStream());
+			out.flush();
+			System.out.println("ClientLocation::Created output stream");
 		} catch (UnknownHostException e) {
 			System.err.println("ERROR: Don't know where to connect!");
 			e.printStackTrace();

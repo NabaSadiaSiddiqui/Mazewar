@@ -300,9 +300,10 @@ public class Mazewar extends JFrame {
         
         
         public static void respawn(Point point, Direction d) {
-        	System.out.println("Mazewar: respawn");
-        	PlayerMeta newPos = new PlayerMeta(Mazewar.guiClient.getId(), Mazewar.guiClient.getName(), point.getX(), point.getY(), d.toString(), guiClient.getHostname(), guiClient.getPort());
-        	new ClientMulticast(peers, guiClient, tokenLock).mMove(MazewarPacket.CLIENT_RESPAWN, newPos, tokenMaster);
+        	ClientServerListenerHandlerThread.clientThread.respawn(point, d);
+        	//System.out.println("Mazewar: respawn");
+        	//PlayerMeta newPos = new PlayerMeta(Mazewar.guiClient.getId(), Mazewar.guiClient.getName(), point.getX(), point.getY(), d.toString(), guiClient.getHostname(), guiClient.getPort());
+        	//new ClientMulticast(peers, guiClient, tokenLock).mCast(MazewarPacket.CLIENT_RESPAWN, newPos, tokenMaster);
         }
         
         public static boolean removePlayer(String name) {
@@ -321,26 +322,32 @@ public class Mazewar extends JFrame {
         }
         
         public static void mQuit() {
-        	new ClientMulticast(peers, guiClient, tokenLock).mMove(MazewarPacket.CLIENT_QUIT, null, tokenMaster);
+        	ClientServerListenerHandlerThread.clientThread.quit();
+        	//new ClientMulticast(peers, guiClient, tokenLock).mCast(MazewarPacket.CLIENT_QUIT, null, tokenMaster);
         }
         
         public static void mForward() {
-        	//Mazewar.mCast.mMove(MazewarPacket.CLIENT_FORWARD, null, Mazewar.tokenMaster);
+        	ClientServerListenerHandlerThread.clientThread.forward();
+        	//new ClientMulticast(peers, guiClient, tokenLock).mCast(MazewarPacket.CLIENT_FORWARD, null, Mazewar.tokenMaster);
         }
         
         public static void mBackup() {
-        	new ClientMulticast(peers, guiClient, tokenLock).mMove(MazewarPacket.CLIENT_BACKWARD, null, tokenMaster);
+        	ClientServerListenerHandlerThread.clientThread.backup();
+        	//new ClientMulticast(peers, guiClient, tokenLock).mCast(MazewarPacket.CLIENT_BACKWARD, null, tokenMaster);
         }
         
         public static void mFire() {
-        	new ClientMulticast(peers, guiClient, tokenLock).mMove(MazewarPacket.CLIENT_FIRE, null, tokenMaster);
+        	ClientServerListenerHandlerThread.clientThread.fire();
+        	//new ClientMulticast(peers, guiClient, tokenLock).mCast(MazewarPacket.CLIENT_FIRE, null, tokenMaster);
         }
         
         public static void mLeft() {
-        	new ClientMulticast(peers, guiClient, tokenLock).mMove(MazewarPacket.CLIENT_LEFT, null, tokenMaster);
+        	ClientServerListenerHandlerThread.clientThread.left();
+        	//new ClientMulticast(peers, guiClient, tokenLock).mCast(MazewarPacket.CLIENT_LEFT, null, tokenMaster);
         }
         
         public static void mRight() {
-        	new ClientMulticast(peers, guiClient, tokenLock).mMove(MazewarPacket.CLIENT_RIGHT, null, tokenMaster);
+        	ClientServerListenerHandlerThread.clientThread.right();
+        	//new ClientMulticast(peers, guiClient, tokenLock).mCast(MazewarPacket.CLIENT_RIGHT, null, tokenMaster);
         }
 }

@@ -18,6 +18,8 @@ public class ClientServerListenerHandlerThread extends Thread {
 	private TokenMaster tokenMaster;
 	private int ID_DEFAULT = -1;
 	
+	public static ClientListenerHandlerThread clientThread;
+	
 	/**
 	 * Socket through which communication will be made from other clients
 	 */
@@ -52,7 +54,7 @@ public class ClientServerListenerHandlerThread extends Thread {
 		registerSelf();
     	
     	// Get remote clients on the maze   	
-    	try {			
+    	try {
 			// Get other players in the game
     		MazewarPacket packetFromServer = (MazewarPacket) in.readObject();
     		while(packetFromServer != null) {
@@ -65,10 +67,16 @@ public class ClientServerListenerHandlerThread extends Thread {
 	    				Thread thread = new Thread() {
 	    						public void run() {
 	    							try {
+	    								System.out.println("ClientServerListenerHandlerThread::Running thread to start client listener");
 										selfConn = selfSocket.accept();
+										System.out.println("ClientServerListenerHandlerThread::Accepted connection");
 										selfIn = new ObjectInputStream(selfConn.getInputStream());
+										System.out.println("ClientServerListenerHandlerThread::Opened input stream");
 					    				// Lets start the game
-										new ClientListenerHandlerThread(peers, self, next, tokenLock, selfIn, tokenMaster).start();
+										clientThread = new ClientListenerHandlerThread(peers, self, next, tokenLock, selfIn, tokenMaster);
+										System.out.println("ClientServerListenerHandlerThread::Start chandler");
+										
+										clientThread.start();
 	    							} catch (IOException e) {
 										e.printStackTrace();
 									}

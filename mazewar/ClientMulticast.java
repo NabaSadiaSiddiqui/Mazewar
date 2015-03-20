@@ -15,13 +15,13 @@ public class ClientMulticast {
 		this.tokenLock = tokenLock;
 	}
 	
-	public void mMove(int action, PlayerMeta newPosition, TokenMaster tokenMaster) {
+	public void mCast(int action, PlayerMeta newPosition, TokenMaster tokenMaster) {
 		System.out.println("Send action to others");
 		tokenMaster.setNeedToken();
 			
 		MazewarPacket packetToOthers = new MazewarPacket();
 		packetToOthers.type = MazewarPacket.CLIENT_ACTION;
-    	packetToOthers.player = self.getName();
+    	packetToOthers.player = Mazewar.guiClient.getName();
 		
 		switch(action) {
 			case MazewarPacket.CLIENT_FORWARD:

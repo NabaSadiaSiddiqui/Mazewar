@@ -7,12 +7,13 @@ import java.util.concurrent.locks.Lock;
  * Listens to incoming requests from other clients
  */
 public class ClientListenerHandlerThread extends Thread {
-	private BlockingQueue<ClientLocation> peers;
-	private GUIClient gui;
+	private static BlockingQueue<ClientLocation> peers;
+	private static GUIClient gui;
 	private ClientLocation next;
-	private Lock tokenLock;
+	private static Lock tokenLock;
 	private TokenMaster tokenMaster;
 	private int nAcks = 0;
+	private static String running = "Not running";
 	
 	/**
 	 * Socket through which communication will be made from other clients
@@ -31,6 +32,8 @@ public class ClientListenerHandlerThread extends Thread {
 	}
 	
 	public void run() {
+		running = "ClientListenerHandlerThread is running";
+		System.out.println(running);
 		try {
 			MazewarPacket packetFromClient = (MazewarPacket) selfIn.readObject();
 
@@ -165,4 +168,34 @@ public class ClientListenerHandlerThread extends Thread {
 			}
 		}
 	}
+	
+	public static void quit() {
+    	new ClientMulticast(peers, gui, tokenLock).mCast(MazewarPacket.CLIENT_QUIT, null, Mazewar.tokenMaster);
+    }
+	
+	public static void forward() {
+    	new ClientMulticast(peers, gui, tokenLock).mCast(MazewarPacket.CLIENT_FORWARD, null, Mazewar.tokenMaster);
+	}
+    
+    public static void backup() {
+    	new ClientMulticast(peers, gui, tokenLock).mCast(MazewarPacket.CLIENT_BACKWARD, null, Mazewar.tokenMaster);
+    }
+    
+    public static void fire() {
+    	new ClientMulticast(peers, gui, tokenLock).mCast(MazewarPacket.CLIENT_FIRE, null, Mazewar.tokenMaster);
+    }
+    
+    public static void left() {
+    	new ClientMulticast(peers, gui, tokenLock).mCast(MazewarPacket.CLIENT_LEFT, null, Mazewar.tokenMaster);
+    }
+    
+    public static void right() {
+    	new ClientMulticast(peers, gui, tokenLock).mCast(MazewarPacket.CLIENT_RIGHT, null, Mazewar.tokenMaster);
+    }
+    
+    public static void respawn(Point point, Direction d) {
+    	System.out.println("Mazewar: respawn");
+    	PlayerMeta newPos = new PlayerMeta(Mazewar.guiClient.getId(), Mazewar.guiClient.getName(), point.getX(), point.getY(), d.toString(), gui.getHostname(), gui.getPort());
+    	new ClientMulticast(peers, gui, tokenLock).mCast(MazewarPacket.CLIENT_RESPAWN, newPos, Mazewar.tokenMaster);
+    }
 }
