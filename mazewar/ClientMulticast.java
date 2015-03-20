@@ -1,21 +1,29 @@
 import java.io.IOException;
 import java.util.Iterator;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 
 public class ClientMulticast {
 	private BlockingQueue<ClientState.ClientLocation> peers;
-
-	public ClientMulticast(BlockingQueue<ClientState.ClientLocation> peers) {
+	private GUIClient self;
+	
+	// Lock to manage access to the token
+	private Lock tokenLock;
+	
+	public ClientMulticast(BlockingQueue<ClientState.ClientLocation> peers, GUIClient self, Lock tokenLock) {
 		this.peers = peers;
+		this.self = self;
+		this.tokenLock = tokenLock;
 	}
 	
-	public void mMove(int action, PlayerMeta newPosition) {
-		TokenMaster.setNeedToken();
+	public void mMove(int action, PlayerMeta newPosition, TokenMaster tokenMaster) {
+		tokenMaster.setNeedToken();
 			
 		MazewarPacket packetToOthers = new MazewarPacket();
 		packetToOthers.type = MazewarPacket.CLIENT_ACTION;
-    	packetToOthers.player = ClientState.PLAYER_NAME;
+    	packetToOthers.player = self.getName();
 		
 		switch(action) {
 			case MazewarPacket.CLIENT_FORWARD:
@@ -52,7 +60,7 @@ public class ClientMulticast {
 				ClientState.ClientLocation other = others.next();
 				try {
 					other.getOut().writeObject(packetToOthers);
-					Mazewar.consolePrintLn(ClientState.PLAYER_NAME + ": sent action to respawn to others successfully");
+					Mazewar.consolePrintLn(self.getName() + ": sent action to respawn to others successfully");
 
 				} catch (IOException e) {
 					e.printStackTrace();
@@ -60,7 +68,7 @@ public class ClientMulticast {
 			}
 			
 			
-			String playerName = ClientState.PLAYER_NAME;
+			String playerName = self.getName();
 			Iterator allClients = Mazewar.maze.getClients();
 			Client player = null;
 			while(allClients.hasNext()) {
@@ -88,7 +96,7 @@ public class ClientMulticast {
 				ClientState.ClientLocation other = others.next();
 				try {
 					other.getOut().writeObject(packetToOthers);
-					Mazewar.consolePrintLn(ClientState.PLAYER_NAME + ": sent action to respawn to others successfully");
+					Mazewar.consolePrintLn(self.getName() + ": sent action to respawn to others successfully");
 
 				} catch (IOException e) {
 					e.printStackTrace();
@@ -97,14 +105,14 @@ public class ClientMulticast {
 			
 			Mazewar.quit();
 		} else {
-			ClientState.tokenLock.lock();
-			if(ClientState.HAVE_TOKEN) {
+			tokenLock.lock();
+			if(tokenMaster.haveToken()) {
 				Iterator<ClientState.ClientLocation> others = peers.iterator();
 				while(others.hasNext()) {
 					ClientState.ClientLocation other = others.next();
 					try {
 						other.getOut().writeObject(packetToOthers);
-						Mazewar.consolePrintLn(ClientState.PLAYER_NAME + ": sent action to move to others successfully");
+						Mazewar.consolePrintLn(self.getName() + ": sent action to move to others successfully");
 	
 					} catch (IOException e) {
 						e.printStackTrace();
@@ -112,7 +120,7 @@ public class ClientMulticast {
 				}
 				
 				
-				String playerName = ClientState.PLAYER_NAME;
+				String playerName = self.getName();
 				Iterator allClients = Mazewar.maze.getClients();
 				Client player = null;
 				while(allClients.hasNext()) {
@@ -152,7 +160,7 @@ public class ClientMulticast {
 			} else {
 				System.out.println("Do you really wanna be sending this...");
 			}
-			ClientState.tokenLock.unlock();
+			tokenLock.unlock();
 		}
 	}
 	
@@ -160,14 +168,14 @@ public class ClientMulticast {
 		
 		MazewarPacket packetToOthers = new MazewarPacket();
 		packetToOthers.type = MazewarPacket.CLIENT_ACK;
-    	packetToOthers.player = ClientState.PLAYER_NAME;
+    	packetToOthers.player = Mazewar.guiClient.getName();
 		
 		Iterator<ClientState.ClientLocation> others = peers.iterator();
 		while(others.hasNext()) {
 			ClientState.ClientLocation other = others.next();
 			try {
 				other.getOut().writeObject(packetToOthers);
-				Mazewar.consolePrintLn(ClientState.PLAYER_NAME + ": sent ack to others");
+				Mazewar.consolePrintLn(Mazewar.guiClient.getName() + ": sent ack to others");
 
 			} catch (IOException e) {
 				e.printStackTrace();

@@ -28,6 +28,10 @@ import java.awt.event.KeyEvent;
  */
 
 public class GUIClient extends LocalClient implements KeyListener {
+	
+		private int serverId = -1;
+		private String hostname = null;
+		private int port = -1;
 
         /**
          * Create a GUI controlled {@link LocalClient}.  
@@ -76,4 +80,27 @@ public class GUIClient extends LocalClient implements KeyListener {
         public void keyTyped(KeyEvent e) {
         }
 
+        public void setId(int id) {
+        	serverId = id;
+        }
+        
+        public int getId() {
+        	return serverId;
+        }
+        
+        public void setHostname(String hname) {
+        	hostname = hname;
+        }
+        
+        public String getHostname() {
+        	return hostname;
+        }
+        
+        public void setPort(int prt) {
+        	port = prt;
+        }
+        
+        public int getPort() {
+        	return port;
+        }
 }

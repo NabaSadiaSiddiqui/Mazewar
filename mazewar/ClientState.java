@@ -10,50 +10,26 @@ import java.util.concurrent.locks.ReentrantLock;
 
 public class ClientState {
 	
-	public static String hostname = "localhost";
+	//public static String hostname = "localhost";
 	
-	public static int port;
+	//public static int port;
 	
 	public static int ID_DEFAULT = -1;
 	
-	// State indicates if player has the token
-	public static boolean HAVE_TOKEN = false;
-	
-	// State indicates if player needs token to enter a critical section
-	public static boolean NEED_TOKEN = false;
-	
 	public static int CURR_TIME = 0;
 	
-	// Name of the player
-	public static String PLAYER_NAME;
-	
-	// Unique id assigned to the player by the server
-	public static int PLAYER_ID;
-	
-	// Initial, starting position of the player on the maze
-	public static Point PLAYER_POINT;
-	
-	// The player next to the self player in the ring
-	public static ClientLocation nextClient;
-	
-	// Lock to manage access to the token
-	public static Lock tokenLock = new ReentrantLock();
-	
-	// Lock to manage access to the queue of peers
-	public static Lock peerLock = new ReentrantLock();
-	
 	// State to indicate how many ACK codes it has received
-	public static int nAcks = 0;
+	//public static int nAcks = 0;
 	
 	/**
 	 * Thread responsible for passing down the token
 	 */
-	public static Thread tokenMaster;
+	//public static Thread tokenMaster;
 		
 	/**
 	 * Queue of actions performed by the player
 	 */
-	static BlockingQueue<Integer> actions = new LinkedBlockingQueue<Integer>();
+	//static BlockingQueue<Integer> actions = new LinkedBlockingQueue<Integer>();
 	
 	
 	static ConcurrentHashMap<String, Integer> scoreMap = new ConcurrentHashMap<String, Integer>();
@@ -145,21 +121,21 @@ public class ClientState {
 	}
 	
 	public static boolean isSelf(Client client) {
-		return client.getName().equals(PLAYER_NAME);
+		return client.getName().equals(Mazewar.guiClient.getName());
 	}
 	
-	public static boolean isSelfLocation(String hostname, int port) {
+	/*public static boolean isSelfLocation(String hostname, int port) {
 		return hostname.equals(ClientState.hostname) && port == ClientState.port;
-	}
+	}*/
 	
-	public static boolean isCurrPosition(Point curr) {
-		int xRef = PLAYER_POINT.getX();
-		int yRef = PLAYER_POINT.getY();
+	/*public static boolean isCurrPosition(Point curr) {
+		int xRef = Mazewar.guiClient.getPoint().getX();
+		int yRef = Mazewar.guiClient.getPoint().getY();
 		
 		int xCurr = curr.getX();
 		int yCurr = curr.getY();
 		
 		return xRef == xCurr && yRef == yCurr;
-	}
+	}*/
 	
 }

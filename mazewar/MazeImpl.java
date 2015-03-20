@@ -472,7 +472,7 @@ public class MazeImpl extends Maze implements Serializable, ClientListener, Runn
                     // Pick a random starting point, and check to see if it is already occupied
                     point = new Point(randomGen.nextInt(maxX),randomGen.nextInt(maxY));
                     
-                    while(ClientState.isCurrPosition(point)) {
+                    while(isCurrPosition(point)) {
                         point = new Point(randomGen.nextInt(maxX),randomGen.nextInt(maxY));
                     }
                     
@@ -498,6 +498,16 @@ public class MazeImpl extends Maze implements Serializable, ClientListener, Runn
                 
 
         }
+        
+    	private boolean isCurrPosition(Point curr) {
+			int xRef = Mazewar.guiClient.getPoint().getX();
+			int yRef = Mazewar.guiClient.getPoint().getY();
+			
+			int xCurr = curr.getX();
+			int yCurr = curr.getY();
+			
+			return xRef == xCurr && yRef == yCurr;
+		}
         
         /**
          * Internal helper called when a {@link Client} emits a turnLeft action.

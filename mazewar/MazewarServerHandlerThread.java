@@ -78,8 +78,10 @@ public class MazewarServerHandlerThread extends Thread {
 						ServerState.allPlayers.put(player.getName(), pMet);
 						ServerState.outAll.put(player.getName(), toClient);
 						
+						packetToClient.type = MazewarPacket.SERVER_OK;
+						packetToClient.clientId = SharedData.CURR_PLAYERS_COUNT;
+						
 						SharedData.CURR_PLAYERS_COUNT++;
-
 					} else { // Report error
 						gotServerError = true;
 						packetToClient.type = MazewarPacket.SERVER_ERROR;

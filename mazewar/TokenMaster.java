@@ -1,64 +1,74 @@
 import java.io.*;
+import java.util.concurrent.locks.Lock;
 
 public class TokenMaster extends Thread {
-	public TokenMaster() {
+	//private ClientState.ClientLocation next;
+	private Lock tokenLock;
+	// State indicates if player has the token
+	private boolean HAVE_TOKEN = false;	
+	// State indicates if player needs token to enter a critical section
+	private boolean NEED_TOKEN = false;
+	
+	public TokenMaster(Lock tokenLock) {
 		super("TokenMaster");
+		this.tokenLock = tokenLock;
 	}
 	
 	public void run() {
-		System.out.println("Passing token to next player in the ring");
-		if(!TokenMaster.needToken() && TokenMaster.haveToken()) { // dont need it BUT have it
-			TokenMaster.passToken();
+		if(!needToken() && haveToken()) { // dont need it BUT have it
+			System.out.println("Passing token to next player in the ring");
+			//passToken();
 		}
 	}
 	
-	public static void passToken() {
-		if(ClientState.nextClient == null) {
+	public void passToken(ClientState.ClientLocation next) {
+		if(next == null) {
 			return;
 		}
 		try {
-			ClientState.tokenLock.lock();
-			ClientState.HAVE_TOKEN = false;
+			tokenLock.lock();
+			HAVE_TOKEN = false;
 			MazewarPacket packetToNext = new MazewarPacket();
 			packetToNext.type = MazewarPacket.CLIENT_TOKEN_EXCHANGE;
-			ClientState.nextClient.getOut().writeObject(packetToNext);
-			ClientState.tokenLock.unlock();
+			System.out.println(next.getName());
+			next.getOut().writeObject(packetToNext);
+			tokenLock.unlock();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
 	}
 	
-	public static boolean needToken() {
+	public boolean needToken() {
 		boolean need;
-		ClientState.tokenLock.lock();
-		need = ClientState.NEED_TOKEN;
-		ClientState.tokenLock.unlock();
+		tokenLock.lock();
+		need = NEED_TOKEN;
+		tokenLock.unlock();
 		return need;
 	}
 	
-	public static boolean haveToken() {
+	public boolean haveToken() {
 		boolean have;
-		ClientState.tokenLock.lock();
-		have = ClientState.HAVE_TOKEN;
-		ClientState.tokenLock.unlock();
+		tokenLock.lock();
+		have = HAVE_TOKEN;
+		tokenLock.unlock();
 		return have;
 	}
 	
-	public static void setNeedToken() {
-		ClientState.tokenLock.lock();
-		ClientState.NEED_TOKEN = true;
-		ClientState.tokenLock.unlock();
+	public void setNeedToken() {
+		tokenLock.lock();
+		NEED_TOKEN = true;
+		tokenLock.unlock();
 	}
 	
-	public static void unsetNeedToken() {
-		ClientState.tokenLock.lock();
-		ClientState.NEED_TOKEN = false;
-		ClientState.tokenLock.unlock();
+	public void unsetNeedToken() {
+		tokenLock.lock();
+		NEED_TOKEN = false;
+		tokenLock.unlock();
 	}
 	
-	public static void setHaveToken() {
-		ClientState.tokenLock.lock();
-		ClientState.HAVE_TOKEN = true;
-		ClientState.tokenLock.unlock();
+	public void setHaveToken() {
+		tokenLock.lock();
+		HAVE_TOKEN = true;
+		tokenLock.unlock();
 	}
 }

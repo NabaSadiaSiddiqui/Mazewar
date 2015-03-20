@@ -2,19 +2,29 @@ import java.io.*;
 import java.net.*;
 import java.util.ArrayList;
 import java.util.Enumeration;
-import java.util.Iterator;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.locks.Lock;
 
 public class ClientServerListenerHandlerThread extends Thread {
 	
 	private ObjectOutputStream out = null;
 	private ObjectInputStream in = null;
-	private Client self;
+	private GUIClient self;
 	private Maze maze;
 	private BlockingQueue<ClientState.ClientLocation> peers;
+	private ClientState.ClientLocation next;
+	private Lock tokenLock;
+	private TokenMaster tokenMaster;
 	
-	public ClientServerListenerHandlerThread(Socket socket, Client self, Maze maze, BlockingQueue<ClientState.ClientLocation> peers) {
+	/**
+	 * Socket through which communication will be made from other clients
+	 */
+	private ServerSocket selfSocket = null;
+	private Socket selfConn = null;
+	private ObjectInputStream selfIn = null;
+	
+	public ClientServerListenerHandlerThread(Socket socket, GUIClient self, Maze maze, BlockingQueue<ClientState.ClientLocation> peers, ClientState.ClientLocation nextClient, Lock tokenLock, ServerSocket selfSocket, Socket selfConn, ObjectInputStream selfIn, TokenMaster tokenMaster) {
 		super("ClientServerListenerHandlerThread");
 		try {
 			out = new ObjectOutputStream(socket.getOutputStream());
@@ -22,6 +32,12 @@ public class ClientServerListenerHandlerThread extends Thread {
 			this.self = self;
 			this.maze = maze;
 			this.peers = peers;
+			this.next = nextClient;
+			this.tokenLock = tokenLock;
+			this.tokenMaster = tokenMaster;
+			this.selfSocket = selfSocket;
+			this.selfConn = selfConn;
+			this.selfIn = selfIn;
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -44,23 +60,25 @@ public class ClientServerListenerHandlerThread extends Thread {
     			
     			switch(type) {
 	    			case MazewarPacket.SERVER_BROADCAST_PLAYERS:
+	    				System.out.println("Got a packet to broadcast players");
 	    				Thread thread = new Thread() {
 	    						public void run() {
 	    							try {
-										Mazewar.selfConn = Mazewar.selfSocket.accept();
-										Mazewar.selfIn = new ObjectInputStream(Mazewar.selfConn.getInputStream());
+										selfConn = selfSocket.accept();
+										selfIn = new ObjectInputStream(selfConn.getInputStream());
 					    				// Lets start the game
-					                    new ClientListenerHandlerThread(peers).start();
+					                    new ClientListenerHandlerThread(peers, self, next, tokenLock, selfSocket, selfConn, selfIn, tokenMaster).start();
 	    							} catch (IOException e) {
 										e.printStackTrace();
 									}
 	    						}};
 	    				thread.start();
-	    				addRemoteClients(self, maze, packetFromServer);
+						
+	    				addRemoteClients(packetFromServer);
 	    				break;
 	    			case MazewarPacket.SERVER_SET_TOKEN:
-	    				TokenMaster.setHaveToken();
-	    				new TokenMaster().start();
+	    				tokenMaster.setHaveToken();
+	    				new TokenMaster(tokenLock).start();
 	    				break;
     				default:
     					break;
@@ -139,7 +157,7 @@ public class ClientServerListenerHandlerThread extends Thread {
     	// Make a request to register
     	MazewarPacket packetToServer = new MazewarPacket();
     	packetToServer.type = MazewarPacket.CLIENT_REGISTER;
-    	packetToServer.playerInfo = new PlayerMeta(ClientState.ID_DEFAULT, name, location.getX(), location.getY(), orientation, ClientState.hostname, ClientState.port);
+    	packetToServer.playerInfo = new PlayerMeta(ClientState.ID_DEFAULT, name, location.getX(), location.getY(), orientation, self.getHostname(), self.getPort());
     	
     	try {
     		// Register with server
@@ -149,11 +167,10 @@ public class ClientServerListenerHandlerThread extends Thread {
 			if(packetFromServer.type == MazewarPacket.SERVER_ERROR) {
 				System.err.println("ERROR: There are already too many players in the game");
 				System.exit(1);
-			}
-			// Save self state
-			ClientState.PLAYER_NAME = name;
-			ClientState.PLAYER_POINT = location;
-			Mazewar.consolePrintLn(name + ": registered successfully");
+			} else if(packetFromServer.type == MazewarPacket.SERVER_OK) {
+				Mazewar.consolePrintLn(name + ": registered successfully");
+				self.setId(packetFromServer.clientId);
+			}			
 		} catch (IOException e) {
 			System.err.println("ERROR: Could not write to output stream");
 			System.exit(1);
@@ -163,17 +180,17 @@ public class ClientServerListenerHandlerThread extends Thread {
 		}   
 	}
 	
-	private void addRemoteClients(Client self, Maze maze, MazewarPacket packetFromServer) {
+	private void addRemoteClients(MazewarPacket packetFromServer) {
     	ConcurrentHashMap<String, PlayerMeta> activePlayers = packetFromServer.allPlayers;
 		
 		Enumeration<String> clientKeys = activePlayers.keys();
 		
-		int nextClientId = ClientState.PLAYER_ID + 1;
+		int nextClientId = self.getId() + 1;
 		if(nextClientId >= SharedData.MAX_PLAYERS) {
 			nextClientId = 0;
 		}
 		
-		System.out.println("Self client id is " + ClientState.PLAYER_ID);
+		System.out.println("Self client id is " + self.getId());
 		System.out.println("Next client id is " + nextClientId);
 		
 		
@@ -189,7 +206,7 @@ public class ClientServerListenerHandlerThread extends Thread {
 				maze.addClientAtPointWithDirection((Client) client, point, direction);
 				
 				// Add location of other client to the queue
-				if(!ClientState.isSelfLocation(player.getHostname(), player.getPort())) {
+				if(!isSelf(player.getHostname(), player.getPort())) {
 					ClientState.ClientLocation other = new ClientState.ClientLocation(player.getHostname(), player.getPort(), player.getId(), player.getName());
 					boolean added = peers.add(other);
 					
@@ -200,14 +217,15 @@ public class ClientServerListenerHandlerThread extends Thread {
 					}
 					
 					if(player.getId()==nextClientId) {
-						ClientState.nextClient = other;
+						this.next = other;
 						System.out.println("Set next client in the ring to " + player.getName());
 					}
 				}
 			}
-			if(self.getName().equals(playerName)) {
-				ClientState.PLAYER_ID = player.getId();
-			}
 		}
+	}
+	
+	private boolean isSelf(String hostname, int port) {
+		return self.getHostname().equals(hostname) && self.getPort() == port;
 	}
 }

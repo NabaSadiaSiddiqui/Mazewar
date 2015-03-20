@@ -152,4 +152,7 @@ public class MazewarPacket implements Serializable {
 	 * Hash map of all players in the game
 	 */
 	public ConcurrentHashMap<String, PlayerMeta> allPlayers = new ConcurrentHashMap<String, PlayerMeta>();
+
+	// Client id assigned by server
+	public int clientId = -1;
 }
