@@ -102,15 +102,10 @@ public class ClientMulticast {
 			
 			Mazewar.quit();
 		} else {
-			System.out.println("In else");
 			tokenLock.lock();
-			System.out.println("Acquired lock");
 			if(tokenMaster.haveToken()) {
-				System.out.println("Size of peers is " + peers.size());
 				Iterator<ClientLocation> others = peers.iterator();
-				System.out.println("Before while loop");
 				while(others.hasNext()) {
-					System.out.println("Inside while loop");
 					ClientLocation other = others.next();
 					try {
 						other.getOut().writeObject(packetToOthers);
@@ -120,7 +115,6 @@ public class ClientMulticast {
 						e.printStackTrace();
 					}
 				}
-				System.out.println("End of while loop");
 				
 				String playerName = self.getName();
 				Iterator allClients = Mazewar.maze.getClients();
@@ -149,7 +143,6 @@ public class ClientMulticast {
 						player.fire();
 						break;
 					case MazewarPacket.CLIENT_RESPAWN:
-						System.out.println("ClientMulticast: Respawn self");
 						String name = newPosition.getName();
 						Point p = new Point(newPosition.getX(), newPosition.getY());
 						Direction d = Direction.strToDir(newPosition.getOrientation());

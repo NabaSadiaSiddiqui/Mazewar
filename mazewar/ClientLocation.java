@@ -21,7 +21,6 @@ public class ClientLocation {
 		this.name = name;
 		
 		try {
-			System.out.println("ClientLocation::opening socket to speak to");
 			socket = new Socket(hostname, port);
 			out = new ObjectOutputStream(socket.getOutputStream());
 			out.flush();
@@ -39,14 +38,13 @@ public class ClientLocation {
 		if(out == null) {
 			try {
 				out = new ObjectOutputStream(socket.getOutputStream());
-				System.out.println("Got streams to write to");
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
 		}
 		
 		if(!socket.isConnected()) {
-			System.out.println("Socket is closed");
+			System.err.println("ClientLocation::socket is closed");
 		}
 		
 		return out;
@@ -60,14 +58,14 @@ public class ClientLocation {
 					iStream = socket.getInputStream();
 				}
 				in = new ObjectInputStream(iStream);
-				System.out.println("Got streams to read from");
+				System.out.println("ClientLocation::got streams to read from");
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
 		}
 		
 		if(!socket.isConnected()) {
-			System.out.println("Socket is closed");
+			System.err.println("ClientLocation::socket is closed");
 		}
 		
 		return in;

@@ -63,19 +63,13 @@ public class ClientServerListenerHandlerThread extends Thread {
     			
     			switch(type) {
 	    			case MazewarPacket.SERVER_BROADCAST_PLAYERS:
-	    				System.out.println("Got a packet to broadcast players");
 	    				Thread thread = new Thread() {
 	    						public void run() {
 	    							try {
-	    								System.out.println("ClientServerListenerHandlerThread::Running thread to start client listener");
 										selfConn = selfSocket.accept();
-										System.out.println("ClientServerListenerHandlerThread::Accepted connection");
 										selfIn = new ObjectInputStream(selfConn.getInputStream());
-										System.out.println("ClientServerListenerHandlerThread::Opened input stream");
 					    				// Lets start the game
-										clientThread = new ClientListenerHandlerThread(peers, self, next, tokenLock, selfIn, tokenMaster);
-										System.out.println("ClientServerListenerHandlerThread::Start chandler");
-										
+										clientThread = new ClientListenerHandlerThread(peers, self, next, tokenLock, selfIn, tokenMaster);										
 										clientThread.start();
 	    							} catch (IOException e) {
 										e.printStackTrace();
@@ -198,10 +192,6 @@ public class ClientServerListenerHandlerThread extends Thread {
 			nextClientId = 0;
 		}
 		
-		System.out.println("Self client id is " + self.getId());
-		System.out.println("Next client id is " + nextClientId);
-		
-		
 		for(int i=0; i<SharedData.MAX_PLAYERS; i++) {
 			String playerName = clientKeys.nextElement();
 
@@ -217,12 +207,6 @@ public class ClientServerListenerHandlerThread extends Thread {
 				if(!isSelf(player.getHostname(), player.getPort())) {
 					ClientLocation other = new ClientLocation(player.getHostname(), player.getPort(), player.getId(), player.getName());
 					boolean added = peers.add(other);
-					
-					if(added) {
-						System.out.println("Successfully added " + player.getId());
-					} else {
-						System.out.println("Error adding " + player.getId());
-					}
 					
 					if(player.getId()==nextClientId) {
 						this.next = other;
