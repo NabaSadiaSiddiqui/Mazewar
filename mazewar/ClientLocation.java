@@ -2,6 +2,7 @@ import java.io.*;
 import java.net.*;
 
 public class ClientLocation {
+	// Name of the player
 	private String name;
 	// Unique id of the client, assigned by the server
 	private int id;
@@ -35,14 +36,6 @@ public class ClientLocation {
 	}
 	
 	public ObjectOutputStream getOut() {
-		if(out == null) {
-			try {
-				out = new ObjectOutputStream(socket.getOutputStream());
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-		}
-		
 		if(!socket.isConnected()) {
 			System.err.println("ClientLocation::socket is closed");
 		}

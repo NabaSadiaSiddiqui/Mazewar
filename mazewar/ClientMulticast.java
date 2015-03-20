@@ -16,7 +16,6 @@ public class ClientMulticast {
 	}
 	
 	public void mCast(int action, PlayerMeta newPosition, TokenMaster tokenMaster) {
-		System.out.println("Send action to others");
 		tokenMaster.setNeedToken();
 			
 		MazewarPacket packetToOthers = new MazewarPacket();
@@ -105,17 +104,21 @@ public class ClientMulticast {
 			tokenLock.lock();
 			if(tokenMaster.haveToken()) {
 				Iterator<ClientLocation> others = peers.iterator();
+				System.out.println("ClientMulticast::before while loop");
 				while(others.hasNext()) {
+					System.out.println("ClientMulticast::inside while loop");
 					ClientLocation other = others.next();
 					try {
 						other.getOut().writeObject(packetToOthers);
-						Mazewar.consolePrintLn(self.getName() + ": sent action to move to others successfully");
-	
+						Mazewar.consolePrintLn(self.getName() + ": sent action to " + other.getName());
 					} catch (IOException e) {
 						e.printStackTrace();
 					}
 				}
+				System.out.println("ClientMulticast::end of while loop");
 				
+				
+				// Now make the move on our end as well
 				String playerName = self.getName();
 				Iterator allClients = Mazewar.maze.getClients();
 				Client player = null;

@@ -24,10 +24,8 @@ public class ClientServerListenerHandlerThread extends Thread {
 	 * Socket through which communication will be made from other clients
 	 */
 	private ServerSocket selfSocket = null;
-	private Socket selfConn = null;
-	private ObjectInputStream selfIn = null;
 	
-	public ClientServerListenerHandlerThread(Socket socket, GUIClient self, Maze maze, BlockingQueue<ClientLocation> peers, ClientLocation nextClient, Lock tokenLock, ServerSocket selfSocket, Socket selfConn, ObjectInputStream selfIn, TokenMaster tokenMaster) {
+	public ClientServerListenerHandlerThread(Socket socket, GUIClient self, Maze maze, BlockingQueue<ClientLocation> peers, ClientLocation nextClient, Lock tokenLock, ServerSocket selfSocket, TokenMaster tokenMaster) {
 		super("ClientServerListenerHandlerThread");
 		try {
 			out = new ObjectOutputStream(socket.getOutputStream());
@@ -39,8 +37,6 @@ public class ClientServerListenerHandlerThread extends Thread {
 			this.tokenLock = tokenLock;
 			this.tokenMaster = tokenMaster;
 			this.selfSocket = selfSocket;
-			this.selfConn = selfConn;
-			this.selfIn = selfIn;
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -63,20 +59,9 @@ public class ClientServerListenerHandlerThread extends Thread {
     			
     			switch(type) {
 	    			case MazewarPacket.SERVER_BROADCAST_PLAYERS:
-	    				Thread thread = new Thread() {
-	    						public void run() {
-	    							try {
-										selfConn = selfSocket.accept();
-										selfIn = new ObjectInputStream(selfConn.getInputStream());
-					    				// Lets start the game
-										clientThread = new ClientListenerHandlerThread(peers, self, next, tokenLock, selfIn, tokenMaster);										
-										clientThread.start();
-	    							} catch (IOException e) {
-										e.printStackTrace();
-									}
-	    						}};
-	    				thread.start();
-						
+	    				// Lets start the game
+						clientThread = new ClientListenerHandlerThread(peers, self, next, tokenLock, selfSocket, tokenMaster);										
+						clientThread.start();
 	    				addRemoteClients(packetFromServer);
 	    				break;
 	    			case MazewarPacket.SERVER_SET_TOKEN:

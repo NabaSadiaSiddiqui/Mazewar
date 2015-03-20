@@ -17,30 +17,13 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307,
 USA.
 */
   
-import javax.swing.JFrame;
-import javax.swing.JScrollPane;
-import javax.swing.JTextPane;
-import javax.swing.JPanel;
-import javax.swing.JTable;
-import javax.swing.JOptionPane;
-import java.awt.GridBagLayout;
-import java.awt.GridBagConstraints;
-import javax.swing.BorderFactory;
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.io.Serializable;
-import java.net.ServerSocket;
-import java.net.Socket;
-import java.net.UnknownHostException;
-import java.util.ArrayList;
-import java.util.Enumeration;
-import java.util.Iterator;
-import java.util.concurrent.ArrayBlockingQueue;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
+import javax.swing.*;
+import java.awt.*;
+import java.io.*;
+import java.net.*;
+import java.util.*;
+import java.util.concurrent.*;
+import java.util.concurrent.locks.*;
 
 /**
  * The entry point and glue code for the game.  It also contains some helpful
@@ -60,8 +43,6 @@ public class Mazewar extends JFrame {
 		 * Socket through which communication will be made from other clients
 		 */
 		private static ServerSocket selfSocket = null;
-		private static Socket selfConn = null;
-		private static ObjectInputStream selfIn = null;
 		
 		/**
 		 * Queue of all other players in the game and their location
@@ -73,10 +54,6 @@ public class Mazewar extends JFrame {
 		private static Lock tokenLock;
 		// Token master to manage token
 		public static TokenMaster tokenMaster;
-		// Object to reference the client thread
-		//public static ClientListenerHandlerThread clientThread = null;
-		// Object to manage multicast events
-		//public static ClientMulticast mCast;
 		
         /**
          * The default width of the {@link Maze}.
@@ -188,7 +165,7 @@ public class Mazewar extends JFrame {
                 guiClient.setPort(selfPort);
                 
                 // Lets set up and register with the server
-                new ClientServerListenerHandlerThread(socket, guiClient, maze, peers, nextClient, tokenLock, selfSocket, selfConn, selfIn, tokenMaster).start();  
+                new ClientServerListenerHandlerThread(socket, guiClient, maze, peers, nextClient, tokenLock, selfSocket, tokenMaster).start();  
                 // Create the panel that will display the maze.
                 overheadPanel = new OverheadMazePanel(maze, guiClient);
                 assert(overheadPanel != null);
@@ -301,9 +278,6 @@ public class Mazewar extends JFrame {
         
         public static void respawn(Point point, Direction d) {
         	ClientServerListenerHandlerThread.clientThread.respawn(point, d);
-        	//System.out.println("Mazewar: respawn");
-        	//PlayerMeta newPos = new PlayerMeta(Mazewar.guiClient.getId(), Mazewar.guiClient.getName(), point.getX(), point.getY(), d.toString(), guiClient.getHostname(), guiClient.getPort());
-        	//new ClientMulticast(peers, guiClient, tokenLock).mCast(MazewarPacket.CLIENT_RESPAWN, newPos, tokenMaster);
         }
         
         public static boolean removePlayer(String name) {
@@ -323,31 +297,25 @@ public class Mazewar extends JFrame {
         
         public static void mQuit() {
         	ClientServerListenerHandlerThread.clientThread.quit();
-        	//new ClientMulticast(peers, guiClient, tokenLock).mCast(MazewarPacket.CLIENT_QUIT, null, tokenMaster);
         }
         
         public static void mForward() {
         	ClientServerListenerHandlerThread.clientThread.forward();
-        	//new ClientMulticast(peers, guiClient, tokenLock).mCast(MazewarPacket.CLIENT_FORWARD, null, Mazewar.tokenMaster);
         }
         
         public static void mBackup() {
         	ClientServerListenerHandlerThread.clientThread.backup();
-        	//new ClientMulticast(peers, guiClient, tokenLock).mCast(MazewarPacket.CLIENT_BACKWARD, null, tokenMaster);
         }
         
         public static void mFire() {
         	ClientServerListenerHandlerThread.clientThread.fire();
-        	//new ClientMulticast(peers, guiClient, tokenLock).mCast(MazewarPacket.CLIENT_FIRE, null, tokenMaster);
         }
         
         public static void mLeft() {
         	ClientServerListenerHandlerThread.clientThread.left();
-        	//new ClientMulticast(peers, guiClient, tokenLock).mCast(MazewarPacket.CLIENT_LEFT, null, tokenMaster);
         }
         
         public static void mRight() {
         	ClientServerListenerHandlerThread.clientThread.right();
-        	//new ClientMulticast(peers, guiClient, tokenLock).mCast(MazewarPacket.CLIENT_RIGHT, null, tokenMaster);
         }
 }
