@@ -2,17 +2,15 @@ import java.io.IOException;
 import java.util.Iterator;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
-
 
 public class ClientMulticast {
-	private BlockingQueue<ClientState.ClientLocation> peers;
+	private BlockingQueue<ClientLocation> peers;
 	private GUIClient self;
 	
 	// Lock to manage access to the token
 	private Lock tokenLock;
 	
-	public ClientMulticast(BlockingQueue<ClientState.ClientLocation> peers, GUIClient self, Lock tokenLock) {
+	public ClientMulticast(BlockingQueue<ClientLocation> peers, GUIClient self, Lock tokenLock) {
 		this.peers = peers;
 		this.self = self;
 		this.tokenLock = tokenLock;
@@ -55,9 +53,9 @@ public class ClientMulticast {
 		}
 	
 		if(action == MazewarPacket.CLIENT_RESPAWN) {
-			Iterator<ClientState.ClientLocation> others = peers.iterator();
+			Iterator<ClientLocation> others = peers.iterator();
 			while(others.hasNext()) {
-				ClientState.ClientLocation other = others.next();
+				ClientLocation other = others.next();
 				try {
 					other.getOut().writeObject(packetToOthers);
 					Mazewar.consolePrintLn(self.getName() + ": sent action to respawn to others successfully");
@@ -91,9 +89,9 @@ public class ClientMulticast {
 					break;
 			}
 		} else if(action == MazewarPacket.CLIENT_QUIT) {
-			Iterator<ClientState.ClientLocation> others = peers.iterator();
+			Iterator<ClientLocation> others = peers.iterator();
 			while(others.hasNext()) {
-				ClientState.ClientLocation other = others.next();
+				ClientLocation other = others.next();
 				try {
 					other.getOut().writeObject(packetToOthers);
 					Mazewar.consolePrintLn(self.getName() + ": sent action to respawn to others successfully");
@@ -107,9 +105,9 @@ public class ClientMulticast {
 		} else {
 			tokenLock.lock();
 			if(tokenMaster.haveToken()) {
-				Iterator<ClientState.ClientLocation> others = peers.iterator();
+				Iterator<ClientLocation> others = peers.iterator();
 				while(others.hasNext()) {
-					ClientState.ClientLocation other = others.next();
+					ClientLocation other = others.next();
 					try {
 						other.getOut().writeObject(packetToOthers);
 						Mazewar.consolePrintLn(self.getName() + ": sent action to move to others successfully");
@@ -170,9 +168,9 @@ public class ClientMulticast {
 		packetToOthers.type = MazewarPacket.CLIENT_ACK;
     	packetToOthers.player = Mazewar.guiClient.getName();
 		
-		Iterator<ClientState.ClientLocation> others = peers.iterator();
+		Iterator<ClientLocation> others = peers.iterator();
 		while(others.hasNext()) {
-			ClientState.ClientLocation other = others.next();
+			ClientLocation other = others.next();
 			try {
 				other.getOut().writeObject(packetToOthers);
 				Mazewar.consolePrintLn(Mazewar.guiClient.getName() + ": sent ack to others");

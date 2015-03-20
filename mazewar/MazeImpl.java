@@ -467,7 +467,7 @@ public class MazeImpl extends Maze implements Serializable, ClientListener, Runn
                 
                 update();
                 
-                if(ClientState.isSelf(target)) {	//GUIClient
+                if(target.getName().equals(Mazewar.guiClient.getName())) {	//GUIClient
                 	
                     // Pick a random starting point, and check to see if it is already occupied
                     point = new Point(randomGen.nextInt(maxX),randomGen.nextInt(maxY));

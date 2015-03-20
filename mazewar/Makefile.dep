@@ -366,7 +366,7 @@ SharedData.class : SharedData.java
 ServerState.class : ServerState.java
 ServerState.class : Point.java
 ServerState.class : Point.class
-ClientState.class : ClientState.java
+ClientLocation.class : ClientLocation.java
 ClientServerListenerHandlerThread.class : ClientServerListenerHandlerThread.java
 ClientMulticast.class : ClientMulticast.java
 ClientListenerHandlerThread.class : ClientListenerHandlerThread.java

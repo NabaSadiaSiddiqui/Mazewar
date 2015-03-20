@@ -12,10 +12,11 @@ public class ClientServerListenerHandlerThread extends Thread {
 	private ObjectInputStream in = null;
 	private GUIClient self;
 	private Maze maze;
-	private BlockingQueue<ClientState.ClientLocation> peers;
-	private ClientState.ClientLocation next;
+	private BlockingQueue<ClientLocation> peers;
+	private ClientLocation next;
 	private Lock tokenLock;
 	private TokenMaster tokenMaster;
+	private int ID_DEFAULT = -1;
 	
 	/**
 	 * Socket through which communication will be made from other clients
@@ -24,7 +25,7 @@ public class ClientServerListenerHandlerThread extends Thread {
 	private Socket selfConn = null;
 	private ObjectInputStream selfIn = null;
 	
-	public ClientServerListenerHandlerThread(Socket socket, GUIClient self, Maze maze, BlockingQueue<ClientState.ClientLocation> peers, ClientState.ClientLocation nextClient, Lock tokenLock, ServerSocket selfSocket, Socket selfConn, ObjectInputStream selfIn, TokenMaster tokenMaster) {
+	public ClientServerListenerHandlerThread(Socket socket, GUIClient self, Maze maze, BlockingQueue<ClientLocation> peers, ClientLocation nextClient, Lock tokenLock, ServerSocket selfSocket, Socket selfConn, ObjectInputStream selfIn, TokenMaster tokenMaster) {
 		super("ClientServerListenerHandlerThread");
 		try {
 			out = new ObjectOutputStream(socket.getOutputStream());
@@ -157,7 +158,7 @@ public class ClientServerListenerHandlerThread extends Thread {
     	// Make a request to register
     	MazewarPacket packetToServer = new MazewarPacket();
     	packetToServer.type = MazewarPacket.CLIENT_REGISTER;
-    	packetToServer.playerInfo = new PlayerMeta(ClientState.ID_DEFAULT, name, location.getX(), location.getY(), orientation, self.getHostname(), self.getPort());
+    	packetToServer.playerInfo = new PlayerMeta(ID_DEFAULT, name, location.getX(), location.getY(), orientation, self.getHostname(), self.getPort());
     	
     	try {
     		// Register with server
@@ -207,7 +208,7 @@ public class ClientServerListenerHandlerThread extends Thread {
 				
 				// Add location of other client to the queue
 				if(!isSelf(player.getHostname(), player.getPort())) {
-					ClientState.ClientLocation other = new ClientState.ClientLocation(player.getHostname(), player.getPort(), player.getId(), player.getName());
+					ClientLocation other = new ClientLocation(player.getHostname(), player.getPort(), player.getId(), player.getName());
 					boolean added = peers.add(other);
 					
 					if(added) {

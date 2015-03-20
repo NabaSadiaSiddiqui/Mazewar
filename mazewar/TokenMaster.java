@@ -21,7 +21,7 @@ public class TokenMaster extends Thread {
 		}
 	}
 	
-	public void passToken(ClientState.ClientLocation next) {
+	public void passToken(ClientLocation next) {
 		if(next == null) {
 			return;
 		}

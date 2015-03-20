@@ -9,9 +9,9 @@ import java.util.concurrent.locks.Lock;
  * Listens to incoming requests from other clients
  */
 public class ClientListenerHandlerThread extends Thread {
-	private BlockingQueue<ClientState.ClientLocation> peers;
+	private BlockingQueue<ClientLocation> peers;
 	private GUIClient gui;
-	private ClientState.ClientLocation next;
+	private ClientLocation next;
 	private Lock tokenLock;
 	private TokenMaster tokenMaster;
 	private int nAcks = 0;
@@ -23,7 +23,7 @@ public class ClientListenerHandlerThread extends Thread {
 	private Socket selfConn = null;
 	private ObjectInputStream selfIn = null;
 	
-	public ClientListenerHandlerThread(BlockingQueue<ClientState.ClientLocation> peers, GUIClient gui, ClientState.ClientLocation nextClient, Lock tokenLock, ServerSocket selfSocket, Socket selfConn, ObjectInputStream selfIn, TokenMaster tokenMaster) {
+	public ClientListenerHandlerThread(BlockingQueue<ClientLocation> peers, GUIClient gui, ClientLocation nextClient, Lock tokenLock, ServerSocket selfSocket, Socket selfConn, ObjectInputStream selfIn, TokenMaster tokenMaster) {
 		super("ClientListenerHandlerThread");
 		System.out.println("Created thread to listen to incoming actions from other players in the game");
 		this.peers = peers;
@@ -140,9 +140,9 @@ public class ClientListenerHandlerThread extends Thread {
 	
 	private void cleanupPeerInfo(String name) {
 		Iterator others = peers.iterator();
-		ClientState.ClientLocation _this = null;
+		ClientLocation _this = null;
 		while(others.hasNext()) {
-			ClientState.ClientLocation peer = (ClientState.ClientLocation) others.next();
+			ClientLocation peer = (ClientLocation) others.next();
 			if(peer.getName().equals(name)) {
 				_this = peer;
 				break;
@@ -165,10 +165,10 @@ public class ClientListenerHandlerThread extends Thread {
 			return;
 		}*/
 		
-		Iterator<ClientState.ClientLocation> others = peers.iterator();
+		Iterator<ClientLocation> others = peers.iterator();
 		
 		while(others.hasNext()) {
-			ClientState.ClientLocation other = (ClientState.ClientLocation) others.next();
+			ClientLocation other = (ClientLocation) others.next();
 			if(other.getId() == nextClientId) {
 				this.next = other;
 				System.out.println("Set next client in the ring");

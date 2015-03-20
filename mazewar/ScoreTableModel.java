@@ -29,6 +29,7 @@ import java.util.Set;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.HashMap;
+import java.util.concurrent.ConcurrentHashMap;
   
 /**
  * An implementation of a {@link TableModel} that is designed to listen to
@@ -38,7 +39,9 @@ import java.util.HashMap;
  */
 
 public class ScoreTableModel implements TableModel, MazeListener {
-     
+		
+		private ConcurrentHashMap<String, Integer> scoreMap = new ConcurrentHashMap<String, Integer>();
+	
         /**
          * {@link Client} gets eleven points for a kill.
          */
@@ -194,7 +197,7 @@ public class ScoreTableModel implements TableModel, MazeListener {
                 ScoreWrapper s = new ScoreWrapper(client);
                 
                 Object o = clientMap.get(client);
-                Integer score = ClientState.scoreMap.get(client.getName());
+                Integer score = scoreMap.get(client.getName());
                 if( score != null) {	// adjust score for respawned clients
                     if(o!=null) {
                     	assert(o instanceof ScoreWrapper);
@@ -221,7 +224,7 @@ public class ScoreTableModel implements TableModel, MazeListener {
                 ScoreWrapper s = (ScoreWrapper)o;
                 s.adjustScore(scoreAdjFire);
                 scoreSet.add(s);
-                ClientState.scoreMap.put(client.getName(), s.score);
+                scoreMap.put(client.getName(), s.score);
                 notifyListeners();
         }
         
@@ -234,14 +237,14 @@ public class ScoreTableModel implements TableModel, MazeListener {
                 ScoreWrapper s = (ScoreWrapper)o;
                 s.adjustScore(scoreAdjKill);
                 scoreSet.add(s);
-                ClientState.scoreMap.put(source.getName(), s.score);
+                scoreMap.put(source.getName(), s.score);
                 o = clientMap.get(target);
                 assert(o instanceof ScoreWrapper);
                 scoreSet.remove(o);
                 s = (ScoreWrapper)o;
                 s.adjustScore(scoreAdjKilled);
                 scoreSet.add(s);
-                ClientState.scoreMap.put(target.getName(), s.score);
+                scoreMap.put(target.getName(), s.score);
                 notifyListeners();
         } 
 

@@ -66,9 +66,9 @@ public class Mazewar extends JFrame {
 		/**
 		 * Queue of all other players in the game and their location
 		 */
-		private static BlockingQueue<ClientState.ClientLocation> peers = null;		
+		private static BlockingQueue<ClientLocation> peers = null;		
 		// The player next to the self player in the ring
-		private static ClientState.ClientLocation nextClient;
+		private static ClientLocation nextClient;
 		// Lock to manage access to the token
 		private static Lock tokenLock;
 		// Token master to manage token
@@ -267,7 +267,7 @@ public class Mazewar extends JFrame {
 			String hostname = null;
 			int port = -1;
 			
-			peers = new ArrayBlockingQueue<ClientState.ClientLocation>(5);
+			peers = new ArrayBlockingQueue<ClientLocation>(5);
 			
 			tokenLock = new ReentrantLock();
 			tokenMaster = new TokenMaster(tokenLock);
