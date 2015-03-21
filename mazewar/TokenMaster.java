@@ -14,16 +14,17 @@ public class TokenMaster {
 	}
 
 	public void passToken(ClientLocation next) {
-		System.out.println("Pass token to next client");
 		if (next == null) {
 			return;
 		}
+
+		System.out.println("Pass token to " + next.getName());
+
 		try {
 			tokenLock.lock();
 			HAVE_TOKEN = false;
 			MazewarPacket packetToNext = new MazewarPacket();
 			packetToNext.type = MazewarPacket.CLIENT_TOKEN_EXCHANGE;
-			System.out.println(next.getName());
 			next.getOut().writeObject(packetToNext);
 			tokenLock.unlock();
 		} catch (IOException e) {

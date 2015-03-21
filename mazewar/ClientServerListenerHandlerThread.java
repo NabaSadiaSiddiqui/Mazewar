@@ -1,7 +1,12 @@
 import java.io.*;
 import java.net.*;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Set;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.Lock;
@@ -12,7 +17,6 @@ public class ClientServerListenerHandlerThread extends Thread {
 	private ObjectInputStream in = null;
 	private GUIClient self;
 	private Maze maze;
-	private BlockingQueue<ClientLocation> peers;
 	private ClientLocation next;
 	private Lock tokenLock;
 	private TokenMaster tokenMaster;
@@ -26,16 +30,14 @@ public class ClientServerListenerHandlerThread extends Thread {
 	private ServerSocket selfSocket = null;
 
 	public ClientServerListenerHandlerThread(Socket socket, GUIClient self,
-			Maze maze, BlockingQueue<ClientLocation> peers,
-			ClientLocation nextClient, Lock tokenLock, ServerSocket selfSocket,
-			TokenMaster tokenMaster) {
+			Maze maze, ClientLocation nextClient, Lock tokenLock,
+			ServerSocket selfSocket, TokenMaster tokenMaster) {
 		super("ClientServerListenerHandlerThread");
 		try {
 			out = new ObjectOutputStream(socket.getOutputStream());
 			in = new ObjectInputStream(socket.getInputStream());
 			this.self = self;
 			this.maze = maze;
-			this.peers = peers;
 			this.next = nextClient;
 			this.tokenLock = tokenLock;
 			this.tokenMaster = tokenMaster;
@@ -64,7 +66,7 @@ public class ClientServerListenerHandlerThread extends Thread {
 				case MazewarPacket.SERVER_BROADCAST_PLAYERS:
 					// Lets start the game
 					addRemoteClients(packetFromServer);
-					clientThread = new ClientListenerHandlerThread(peers, self,
+					clientThread = new ClientListenerHandlerThread(self,
 							next, tokenLock, selfSocket, tokenMaster);
 					clientThread.start();
 					break;
@@ -194,8 +196,7 @@ public class ClientServerListenerHandlerThread extends Thread {
 		for (int i = 0; i < SharedData.MAX_PLAYERS; i++) {
 			String playerName = clientKeys.nextElement();
 
-			final PlayerMeta player = (PlayerMeta) activePlayers
-					.get(playerName);
+			PlayerMeta player = (PlayerMeta) activePlayers.get(playerName);
 
 			if (!self.getName().equals(playerName)) {
 				RemoteClient client = new RemoteClient(playerName);
@@ -207,11 +208,11 @@ public class ClientServerListenerHandlerThread extends Thread {
 
 				// Add location of other client to the queue
 				if (!isSelf(player.getHostname(), player.getPort())) {
-					ClientLocation other = new ClientLocation(
-							player.getHostname(), player.getPort(),
-							player.getId(), player.getName());
-					boolean added = peers.add(other);
-
+					ClientLocation other = new ClientLocation(player.getHostname(),
+							player.getPort(), player.getId(), player.getName());
+					
+					Mazewar.peers.add(other);
+					
 					if (player.getId() == nextClientId) {
 						this.next = other;
 						System.out.println("Set next client in the ring to "
@@ -219,6 +220,13 @@ public class ClientServerListenerHandlerThread extends Thread {
 					}
 				}
 			}
+		}
+		
+		System.out.println("Added peers...");
+		Iterator allPeers = Mazewar.peers.iterator();
+		while(allPeers.hasNext()) {
+			ClientLocation c = (ClientLocation) allPeers.next();
+			System.out.println(c.toString());
 		}
 	}
 

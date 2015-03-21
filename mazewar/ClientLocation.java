@@ -10,12 +10,12 @@ public class ClientLocation {
 	/**
 	 * Socket for communication with the client
 	 */
-	private static Socket socket = null;
+	private Socket socket = null;
 	/**
 	 * Data structures to read/write to/from out/in stream
 	 */
-	private static ObjectOutputStream out = null;
-	private static ObjectInputStream in = null;
+	private ObjectOutputStream out = null;
+	private ObjectInputStream in = null;
 
 	public ClientLocation(String hostname, int port, int id, String name) {
 		this.id = id;
@@ -41,7 +41,7 @@ public class ClientLocation {
 		}
 
 		if (out == null) {
-			System.err.println("Output stream is null");
+			System.err.println("ClientLocation::Output stream is null");
 		}
 
 		return out;
@@ -74,5 +74,10 @@ public class ClientLocation {
 
 	public String getName() {
 		return name;
+	}
+	
+	public String toString() {
+		return name.concat(" at ").concat(socket.getInetAddress().getHostName())
+				.concat(":").concat(String.valueOf(socket.getPort()));
 	}
 }

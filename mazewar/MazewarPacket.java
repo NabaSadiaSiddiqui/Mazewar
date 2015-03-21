@@ -26,7 +26,7 @@ class PlayerMeta implements Serializable {
 	 * Printable output
 	 */
 	public String toString() {
-		return " Remote client is " + name + ", at " + port + ":" + hostname;
+		return "Remote client is " + name + ", at " + hostname + ":" + port;
 	}
 
 	/**

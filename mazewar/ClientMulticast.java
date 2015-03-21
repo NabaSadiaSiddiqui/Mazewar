@@ -1,23 +1,20 @@
 import java.io.IOException;
+import java.io.ObjectOutputStream;
 import java.util.Iterator;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.locks.Lock;
 
 public class ClientMulticast {
-	private BlockingQueue<ClientLocation> peers;
 	private GUIClient self;
 	// Lock to manage access to the token
 	private Lock tokenLock;
 
-	public ClientMulticast(BlockingQueue<ClientLocation> peers, GUIClient self,
-			Lock tokenLock) {
-		this.peers = peers;
+	public ClientMulticast(GUIClient self, Lock tokenLock) {
 		this.self = self;
 		this.tokenLock = tokenLock;
 	}
 
-	public void mCast(int action, PlayerMeta newPosition,
-			TokenMaster tokenMaster) {
+	public void mCast(int action, PlayerMeta newPosition, TokenMaster tokenMaster) {
 		tokenMaster.setNeedToken();
 
 		MazewarPacket packetToOthers = new MazewarPacket();
@@ -54,11 +51,12 @@ public class ClientMulticast {
 		}
 
 		if (action == MazewarPacket.CLIENT_RESPAWN) {
-			Iterator<ClientLocation> others = peers.iterator();
+			Iterator<ClientLocation> others = Mazewar.peers.iterator();
 			while (others.hasNext()) {
 				ClientLocation other = others.next();
 				try {
 					other.getOut().writeObject(packetToOthers);
+					other.getOut().flush();
 					Mazewar.consolePrintLn(self.getName()
 							+ ": sent action to respawn to others successfully");
 
@@ -90,11 +88,12 @@ public class ClientMulticast {
 				break;
 			}
 		} else if (action == MazewarPacket.CLIENT_QUIT) {
-			Iterator<ClientLocation> others = peers.iterator();
+			Iterator<ClientLocation> others = Mazewar.peers.iterator();
 			while (others.hasNext()) {
 				ClientLocation other = others.next();
 				try {
 					other.getOut().writeObject(packetToOthers);
+					other.getOut().flush();
 					Mazewar.consolePrintLn(self.getName()
 							+ ": sent action to respawn to others successfully");
 
@@ -107,20 +106,18 @@ public class ClientMulticast {
 		} else {
 			tokenLock.lock();
 			if (tokenMaster.haveToken()) {
-				Iterator<ClientLocation> others = peers.iterator();
-				System.out.println("ClientMulticast::before while loop");
+				Iterator<ClientLocation> others = Mazewar.peers.iterator();
+
 				while (others.hasNext()) {
-					System.out.println("ClientMulticast::inside while loop");
 					ClientLocation other = others.next();
+					ObjectOutputStream oStream = other.getOut();
 					try {
-						other.getOut().writeObject(packetToOthers);
-						Mazewar.consolePrintLn(self.getName()
-								+ ": sent action to " + other.getName());
+						oStream.writeObject(packetToOthers);
+						Mazewar.consolePrintLn("Sent action to " + other.toString());
 					} catch (IOException e) {
 						e.printStackTrace();
 					}
 				}
-				System.out.println("ClientMulticast::end of while loop");
 
 				// Now make the move on our end as well
 				String playerName = self.getName();
@@ -172,7 +169,7 @@ public class ClientMulticast {
 		packetToOthers.type = MazewarPacket.CLIENT_ACK;
 		packetToOthers.player = Mazewar.guiClient.getName();
 
-		Iterator<ClientLocation> others = peers.iterator();
+		Iterator<ClientLocation> others = Mazewar.peers.iterator();
 		while (others.hasNext()) {
 			ClientLocation other = others.next();
 			try {
