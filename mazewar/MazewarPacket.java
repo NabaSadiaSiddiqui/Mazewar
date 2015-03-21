@@ -7,11 +7,12 @@ import java.util.concurrent.ConcurrentHashMap;
 class PlayerMeta implements Serializable {
 	private int id, port, posX, posY;
 	private String name, hostname, orientation;
-	
+
 	/**
 	 * Constructor
 	 */
-	public PlayerMeta(int id, String name, int posX, int posY, String orientation, String hostname, int port) {
+	public PlayerMeta(int id, String name, int posX, int posY,
+			String orientation, String hostname, int port) {
 		this.id = id;
 		this.name = name;
 		this.posX = posX;
@@ -20,41 +21,41 @@ class PlayerMeta implements Serializable {
 		this.hostname = hostname;
 		this.port = port;
 	}
-	
+
 	/**
 	 * Printable output
 	 */
 	public String toString() {
 		return " Remote client is " + name + ", at " + port + ":" + hostname;
 	}
-	
+
 	/**
 	 * Getter functions
 	 */
 	public int getId() {
 		return id;
 	}
-	
+
 	public String getName() {
 		return name;
 	}
-	
+
 	public int getX() {
 		return posX;
 	}
-	
+
 	public int getY() {
 		return posY;
 	}
-	
+
 	public String getOrientation() {
 		return orientation;
 	}
-	
+
 	public String getHostname() {
 		return hostname;
 	}
-	
+
 	public int getPort() {
 		return port;
 	}
@@ -90,7 +91,7 @@ public class MazewarPacket implements Serializable {
 	public static final int CLIENT_TOKEN_EXCHANGE = 111;
 	// Client ack code to player that sent out an action
 	public static final int CLIENT_ACK = 112;
-	
+
 	// Server ack code to player wanting to join the game
 	public static final int SERVER_ACK_JOIN = 201;
 	// Server nack code to player wanting to join the game
@@ -105,49 +106,47 @@ public class MazewarPacket implements Serializable {
 	public static final int SERVER_SET_TOKEN = 206;
 	// Server code that something is amiss...check error code
 	public static final int SERVER_ERROR = 207;
-	
-	
+
 	/**
 	 * Error codes
 	 */
 	public static final int ERROR_MAX_PLAYER_CAPACITY_REACHED = -101;
-	
+
 	/**
 	 * Message header
 	 */
 	public int type = MazewarPacket.CLIENT_NULL;
-		
+
 	/**
 	 * Report errors
 	 */
 	public int error_code;
-	
-	
+
 	/**
 	 * Information about a single client
 	 */
 	public PlayerMeta playerInfo;
-	
+
 	/**
 	 * The coordinates at which player wants to start the game from
 	 */
 	public Point myPosition;
-	
+
 	/**
 	 * Player name who generated the action
 	 */
 	public String player;
-	
+
 	/**
 	 * Action performed by player
 	 */
 	public int action;
-	
+
 	/**
 	 * State to indicate if this player has the token
 	 */
 	public static boolean have_token = false;
-	
+
 	/**
 	 * Hash map of all players in the game
 	 */

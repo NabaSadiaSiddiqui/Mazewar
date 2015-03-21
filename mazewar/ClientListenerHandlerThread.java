@@ -14,16 +14,19 @@ public class ClientListenerHandlerThread extends Thread {
 	private static Lock tokenLock;
 	private TokenMaster tokenMaster;
 	private int nAcks = 0;
-	
+
 	/**
 	 * Socket through which communication will be made from other clients
 	 */
 	private ObjectInputStream selfIn = null;
 	private ServerSocket selfSocket = null;
-	
-	public ClientListenerHandlerThread(BlockingQueue<ClientLocation> peers, GUIClient gui, ClientLocation nextClient, Lock tokenLock, ServerSocket selfSock, TokenMaster tokenMaster) {
+
+	public ClientListenerHandlerThread(BlockingQueue<ClientLocation> peers,
+			GUIClient gui, ClientLocation nextClient, Lock tokenLock,
+			ServerSocket selfSock, TokenMaster tokenMaster) {
 		super("ClientListenerHandlerThread");
-		System.out.println("Created thread to listen to incoming actions from other players in the game");
+		System.out
+				.println("Created thread to listen to incoming actions from other players in the game");
 		this.peers = peers;
 		this.gui = gui;
 		this.next = nextClient;
@@ -31,178 +34,199 @@ public class ClientListenerHandlerThread extends Thread {
 		this.tokenMaster = tokenMaster;
 		this.selfSocket = selfSock;
 	}
-	
+
 	public void run() {
 		System.out.println("ClientListenerHandlerThread is running");
 
 		try {
 			Socket selfConn = selfSocket.accept();
 			selfIn = new ObjectInputStream(selfConn.getInputStream());
-						
-			System.out.println("ClientListenerHandlerThread::reading packet from input stream");
-			MazewarPacket packetFromClient = (MazewarPacket) selfIn.readObject();
-			System.out.println("ClientListenerHandlerThread::read a packet from input stream");
-			while(packetFromClient != null) {
-				System.out.println("ClientListenerHandlerThread::packet from client is not null");
+
+			System.out
+					.println("ClientListenerHandlerThread::reading packet from input stream");
+			MazewarPacket packetFromClient = (MazewarPacket) selfIn
+					.readObject();
+			System.out
+					.println("ClientListenerHandlerThread::read a packet from input stream");
+			while (packetFromClient != null) {
+				System.out
+						.println("ClientListenerHandlerThread::packet from client is not null");
 				int type = packetFromClient.type;
-				
-				switch(type) {
-					case MazewarPacket.CLIENT_TOKEN_EXCHANGE:
-						System.out.println("Got token");
-						tokenMaster.setHaveToken();
-						try {
-							Thread.sleep(200);
-						} catch (InterruptedException e) {
-							e.printStackTrace();
-						}
-						if(tokenMaster.haveToken() && !tokenMaster.needToken()) { // dont need it BUT have it
-							tokenMaster.passToken(this.next);
-						}
+
+				switch (type) {
+				case MazewarPacket.CLIENT_TOKEN_EXCHANGE:
+					System.out.println("Got token");
+					tokenMaster.setHaveToken();
+					try {
+						Thread.sleep(200);
+					} catch (InterruptedException e) {
+						e.printStackTrace();
+					}
+					if (tokenMaster.haveToken() && !tokenMaster.needToken()) { // dont
+																				// need
+																				// it
+																				// BUT
+																				// have
+																				// it
+						tokenMaster.passToken(this.next);
+					}
+					break;
+				case MazewarPacket.CLIENT_ACTION:
+					System.out
+							.println("CLientListenerHandlerThread::received a packet");
+					int action = packetFromClient.action;
+					String playerName = packetFromClient.player;
+					Iterator allClients = Mazewar.maze.getClients();
+					Client player = null;
+					while (allClients.hasNext()) {
+						player = (Client) allClients.next();
+
+						if (player.getName().equals(playerName))
+							break;
+					}
+
+					switch (action) {
+					case MazewarPacket.CLIENT_FORWARD:
+						Mazewar.consolePrintLn("Action: forward");
+						player.forward();
+						new ClientMulticast(peers, gui, tokenLock).sendAck();
 						break;
-					case MazewarPacket.CLIENT_ACTION:
-						System.out.println("CLientListenerHandlerThread::received a packet");
-						int action = packetFromClient.action;
-						String playerName = packetFromClient.player;
-						Iterator allClients = Mazewar.maze.getClients();
-						Client player = null;
-						while(allClients.hasNext()) {
-							player = (Client) allClients.next();
-							
-							if(player.getName().equals(playerName))
-								break;
-						}
-												
-						switch(action) {
-							case MazewarPacket.CLIENT_FORWARD:
-								Mazewar.consolePrintLn("Action: forward");
-								player.forward();
-								new ClientMulticast(peers, gui, tokenLock).sendAck();
-								break;
-							case MazewarPacket.CLIENT_BACKWARD:
-								Mazewar.consolePrintLn("Action: backward");
-								player.backup();
-								new ClientMulticast(peers, gui, tokenLock).sendAck();
-								break;
-							case MazewarPacket.CLIENT_LEFT:
-								Mazewar.consolePrintLn("Action: left");
-								player.turnLeft();
-								new ClientMulticast(peers, gui, tokenLock).sendAck();
-								break;
-							case MazewarPacket.CLIENT_RIGHT:
-								Mazewar.consolePrintLn("Action: right");
-								player.turnRight();
-								new ClientMulticast(peers, gui, tokenLock).sendAck();
-								break;
-							case MazewarPacket.CLIENT_FIRE:
-								Mazewar.consolePrintLn("Action: fire");
-								player.fire();
-								new ClientMulticast(peers, gui, tokenLock).sendAck();
-								break;
-							case MazewarPacket.CLIENT_RESPAWN:
-								Mazewar.consolePrintLn("Action: respawn");
-								PlayerMeta pInfo = packetFromClient.playerInfo;
-								String name = pInfo.getName();
-								Point p = new Point(pInfo.getX(), pInfo.getY());
-								Direction d = Direction.strToDir(pInfo.getOrientation());
-								player.respawn(name, p, d);
-								new ClientMulticast(peers, gui, tokenLock).sendAck();
-								break;
-							case MazewarPacket.CLIENT_QUIT:
-								Mazewar.consolePrintLn("Action: quit");
-								Mazewar.removePlayer(playerName);
-								cleanupPeerInfo(playerName);
-								break;
-							default:
-								Mazewar.consolePrint("Action: unknown");
-								break;
-						}
-						//ClientMulticast.sendAck();
+					case MazewarPacket.CLIENT_BACKWARD:
+						Mazewar.consolePrintLn("Action: backward");
+						player.backup();
+						new ClientMulticast(peers, gui, tokenLock).sendAck();
 						break;
-					case MazewarPacket.CLIENT_ACK:
-						System.out.println("Got an ack code");
-						nAcks++;
-						if(nAcks == (SharedData.MAX_PLAYERS-1)) {
-							nAcks = 0;
-							tokenMaster.unsetNeedToken();
-							tokenMaster.passToken(this.next);
-						}
+					case MazewarPacket.CLIENT_LEFT:
+						Mazewar.consolePrintLn("Action: left");
+						player.turnLeft();
+						new ClientMulticast(peers, gui, tokenLock).sendAck();
+						break;
+					case MazewarPacket.CLIENT_RIGHT:
+						Mazewar.consolePrintLn("Action: right");
+						player.turnRight();
+						new ClientMulticast(peers, gui, tokenLock).sendAck();
+						break;
+					case MazewarPacket.CLIENT_FIRE:
+						Mazewar.consolePrintLn("Action: fire");
+						player.fire();
+						new ClientMulticast(peers, gui, tokenLock).sendAck();
+						break;
+					case MazewarPacket.CLIENT_RESPAWN:
+						Mazewar.consolePrintLn("Action: respawn");
+						PlayerMeta pInfo = packetFromClient.playerInfo;
+						String name = pInfo.getName();
+						Point p = new Point(pInfo.getX(), pInfo.getY());
+						Direction d = Direction
+								.strToDir(pInfo.getOrientation());
+						player.respawn(name, p, d);
+						new ClientMulticast(peers, gui, tokenLock).sendAck();
+						break;
+					case MazewarPacket.CLIENT_QUIT:
+						Mazewar.consolePrintLn("Action: quit");
+						Mazewar.removePlayer(playerName);
+						cleanupPeerInfo(playerName);
 						break;
 					default:
-						System.out.println("Got some mysterious token");
+						Mazewar.consolePrint("Action: unknown");
 						break;
+					}
+					// ClientMulticast.sendAck();
+					break;
+				case MazewarPacket.CLIENT_ACK:
+					System.out.println("Got an ack code");
+					nAcks++;
+					if (nAcks == (SharedData.MAX_PLAYERS - 1)) {
+						nAcks = 0;
+						tokenMaster.unsetNeedToken();
+						tokenMaster.passToken(this.next);
+					}
+					break;
+				default:
+					System.out.println("Got some mysterious token");
+					break;
 				}
-				
+
 				packetFromClient = (MazewarPacket) selfIn.readObject();
 			}
-			System.out.println("CLientListenerHandlerThread::end of while loop");
+			System.out
+					.println("CLientListenerHandlerThread::end of while loop");
 		} catch (IOException e) {
 			e.printStackTrace();
 		} catch (ClassNotFoundException e) {
 			e.printStackTrace();
 		}
 	}
-	
+
 	private void cleanupPeerInfo(String name) {
 		Iterator others = peers.iterator();
 		ClientLocation _this = null;
-		while(others.hasNext()) {
+		while (others.hasNext()) {
 			ClientLocation peer = (ClientLocation) others.next();
-			if(peer.getName().equals(name)) {
+			if (peer.getName().equals(name)) {
 				_this = peer;
 				break;
 			}
 		}
-		if(_this.getId() == this.next.getId()) {
+		if (_this.getId() == this.next.getId()) {
 			reassignNextClient(_this.getId());
 		}
 		peers.remove(_this);
 	}
-	
+
 	private void reassignNextClient(int prevClientId) {
 		int nextClientId = prevClientId + 1;
-		if(nextClientId >= SharedData.MAX_PLAYERS) {
+		if (nextClientId >= SharedData.MAX_PLAYERS) {
 			nextClientId = 0;
 		}
-		
+
 		Iterator<ClientLocation> others = peers.iterator();
-		
-		while(others.hasNext()) {
+
+		while (others.hasNext()) {
 			ClientLocation other = (ClientLocation) others.next();
-			if(other.getId() == nextClientId) {
+			if (other.getId() == nextClientId) {
 				this.next = other;
 				System.out.println("Set next client in the ring");
 				break;
 			}
 		}
 	}
-	
+
 	public void quit() {
-    	new ClientMulticast(peers, gui, tokenLock).mCast(MazewarPacket.CLIENT_QUIT, null, Mazewar.tokenMaster);
-    }
-	
-	public void forward() {
-    	new ClientMulticast(peers, gui, tokenLock).mCast(MazewarPacket.CLIENT_FORWARD, null, Mazewar.tokenMaster);
+		new ClientMulticast(peers, gui, tokenLock).mCast(
+				MazewarPacket.CLIENT_QUIT, null, Mazewar.tokenMaster);
 	}
-    
-    public void backup() {
-    	new ClientMulticast(peers, gui, tokenLock).mCast(MazewarPacket.CLIENT_BACKWARD, null, Mazewar.tokenMaster);
-    }
-    
-    public void fire() {
-    	new ClientMulticast(peers, gui, tokenLock).mCast(MazewarPacket.CLIENT_FIRE, null, Mazewar.tokenMaster);
-    }
-    
-    public void left() {
-    	new ClientMulticast(peers, gui, tokenLock).mCast(MazewarPacket.CLIENT_LEFT, null, Mazewar.tokenMaster);
-    }
-    
-    public void right() {
-    	new ClientMulticast(peers, gui, tokenLock).mCast(MazewarPacket.CLIENT_RIGHT, null, Mazewar.tokenMaster);
-    }
-    
-    public void respawn(Point point, Direction d) {
-    	System.out.println("Mazewar: respawn");
-    	PlayerMeta newPos = new PlayerMeta(Mazewar.guiClient.getId(), Mazewar.guiClient.getName(), point.getX(), point.getY(), d.toString(), gui.getHostname(), gui.getPort());
-    	new ClientMulticast(peers, gui, tokenLock).mCast(MazewarPacket.CLIENT_RESPAWN, newPos, Mazewar.tokenMaster);
-    }
+
+	public void forward() {
+		new ClientMulticast(peers, gui, tokenLock).mCast(
+				MazewarPacket.CLIENT_FORWARD, null, Mazewar.tokenMaster);
+	}
+
+	public void backup() {
+		new ClientMulticast(peers, gui, tokenLock).mCast(
+				MazewarPacket.CLIENT_BACKWARD, null, Mazewar.tokenMaster);
+	}
+
+	public void fire() {
+		new ClientMulticast(peers, gui, tokenLock).mCast(
+				MazewarPacket.CLIENT_FIRE, null, Mazewar.tokenMaster);
+	}
+
+	public void left() {
+		new ClientMulticast(peers, gui, tokenLock).mCast(
+				MazewarPacket.CLIENT_LEFT, null, Mazewar.tokenMaster);
+	}
+
+	public void right() {
+		new ClientMulticast(peers, gui, tokenLock).mCast(
+				MazewarPacket.CLIENT_RIGHT, null, Mazewar.tokenMaster);
+	}
+
+	public void respawn(Point point, Direction d) {
+		System.out.println("Mazewar: respawn");
+		PlayerMeta newPos = new PlayerMeta(Mazewar.guiClient.getId(),
+				Mazewar.guiClient.getName(), point.getX(), point.getY(),
+				d.toString(), gui.getHostname(), gui.getPort());
+		new ClientMulticast(peers, gui, tokenLock).mCast(
+				MazewarPacket.CLIENT_RESPAWN, newPos, Mazewar.tokenMaster);
+	}
 }

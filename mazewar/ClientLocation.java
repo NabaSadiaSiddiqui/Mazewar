@@ -6,7 +6,7 @@ public class ClientLocation {
 	private String name;
 	// Unique id of the client, assigned by the server
 	private int id;
-	
+
 	/**
 	 * Socket for communication with the client
 	 */
@@ -16,11 +16,11 @@ public class ClientLocation {
 	 */
 	private static ObjectOutputStream out = null;
 	private static ObjectInputStream in = null;
-	
+
 	public ClientLocation(String hostname, int port, int id, String name) {
 		this.id = id;
 		this.name = name;
-		
+
 		try {
 			socket = new Socket(hostname, port);
 			out = new ObjectOutputStream(socket.getOutputStream());
@@ -34,20 +34,24 @@ public class ClientLocation {
 			e.printStackTrace();
 		}
 	}
-	
+
 	public ObjectOutputStream getOut() {
-		if(!socket.isConnected()) {
+		if (!socket.isConnected()) {
 			System.err.println("ClientLocation::socket is closed");
 		}
-		
+
+		if (out == null) {
+			System.err.println("Output stream is null");
+		}
+
 		return out;
 	}
-	
+
 	public ObjectInputStream getIn() {
-		if(in == null) {
+		if (in == null) {
 			try {
 				InputStream iStream = socket.getInputStream();
-				while(iStream == null) {
+				while (iStream == null) {
 					iStream = socket.getInputStream();
 				}
 				in = new ObjectInputStream(iStream);
@@ -56,20 +60,19 @@ public class ClientLocation {
 				e.printStackTrace();
 			}
 		}
-		
-		if(!socket.isConnected()) {
+
+		if (!socket.isConnected()) {
 			System.err.println("ClientLocation::socket is closed");
 		}
-		
+
 		return in;
 	}
-	
+
 	public int getId() {
 		return id;
 	}
-	
+
 	public String getName() {
 		return name;
 	}
 }
-
