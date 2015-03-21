@@ -35,6 +35,10 @@ public class ClientLocation {
 		}
 	}
 
+	public Socket getSocket() {
+		return socket;
+	}
+	
 	public ObjectOutputStream getOut() {
 		if (!socket.isConnected()) {
 			System.err.println("ClientLocation::socket is closed");

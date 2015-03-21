@@ -10,8 +10,6 @@ import java.util.concurrent.locks.Lock;
 public class ClientListenerHandlerThread extends Thread {
 	private static GUIClient gui;
 	private ClientLocation next;
-	private static Lock tokenLock;
-	private TokenMaster tokenMaster;
 	private int nAcks = 0;
 
 	/**
@@ -20,19 +18,17 @@ public class ClientListenerHandlerThread extends Thread {
 	private ObjectInputStream selfIn = null;
 	private ServerSocket selfSocket = null;
 
-	public ClientListenerHandlerThread(GUIClient gui, ClientLocation nextClient,
-			Lock tokenLock, ServerSocket selfSock, TokenMaster tokenMaster) {
+	public ClientListenerHandlerThread(GUIClient gui, ClientLocation nextClient, ServerSocket selfSock) {
 		super("ClientListenerHandlerThread");
 		System.out.println("Created thread to listen to incoming actions from other players in the game");
 		this.gui = gui;
 		this.next = nextClient;
-		this.tokenLock = tokenLock;
-		this.tokenMaster = tokenMaster;
 		this.selfSocket = selfSock;
 	}
 
 	public void run() {
 		try {
+			System.out.println("ClientListenerHandlerThread is running");
 			Socket selfConn = selfSocket.accept();
 			selfIn = new ObjectInputStream(selfConn.getInputStream());
 			MazewarPacket packetFromClient = (MazewarPacket) selfIn.readObject();
@@ -43,14 +39,14 @@ public class ClientListenerHandlerThread extends Thread {
 				switch (type) {
 				case MazewarPacket.CLIENT_TOKEN_EXCHANGE:
 					System.out.println("Got token");
-					tokenMaster.setHaveToken();
+					Mazewar.tokenMaster.setHaveToken();
 					try {
 						Thread.sleep(200);
 					} catch (InterruptedException e) {
 						e.printStackTrace();
 					}
-					if (tokenMaster.haveToken() && !tokenMaster.needToken()) { // dont need it BUT have it
-						tokenMaster.passToken(this.next);
+					if (Mazewar.tokenMaster.haveToken() && !Mazewar.tokenMaster.needToken()) { // dont need it BUT have it
+						Mazewar.tokenMaster.passToken(this.next);
 					}
 					break;
 				case MazewarPacket.CLIENT_ACTION:
@@ -105,17 +101,17 @@ public class ClientListenerHandlerThread extends Thread {
 						Mazewar.consolePrint("Action: unknown");
 						break;
 					}
-					new ClientMulticast(gui, tokenLock).sendAck();
+					new ClientMulticast(gui).sendAck();
 					break;
 				case MazewarPacket.CLIENT_ACK:
-					System.out.println("Got an ack code");
-					if(!tokenMaster.haveToken())
+					if(!Mazewar.tokenMaster.haveToken())
 						break;
+					System.out.println("Got ACK code");
 					nAcks++;
 					if (nAcks == (SharedData.MAX_PLAYERS - 1)) {
 						nAcks = 0;
-						tokenMaster.unsetNeedToken();
-						tokenMaster.passToken(this.next);
+						Mazewar.tokenMaster.unsetNeedToken();
+						Mazewar.tokenMaster.passToken(this.next);
 					}
 					break;
 				default:
@@ -167,33 +163,27 @@ public class ClientListenerHandlerThread extends Thread {
 	}
 
 	public void quit() {
-		new ClientMulticast(gui, tokenLock).mCast(
-				MazewarPacket.CLIENT_QUIT, null, Mazewar.tokenMaster);
+		new ClientMulticast(gui).mCast(MazewarPacket.CLIENT_QUIT, null);
 	}
 
 	public void forward() {
-		new ClientMulticast(gui, tokenLock).mCast(
-				MazewarPacket.CLIENT_FORWARD, null, Mazewar.tokenMaster);
+		new ClientMulticast(gui).mCast(MazewarPacket.CLIENT_FORWARD, null);
 	}
 
 	public void backup() {
-		new ClientMulticast(gui, tokenLock).mCast(
-				MazewarPacket.CLIENT_BACKWARD, null, Mazewar.tokenMaster);
+		new ClientMulticast(gui).mCast(MazewarPacket.CLIENT_BACKWARD, null);
 	}
 
 	public void fire() {
-		new ClientMulticast(gui, tokenLock).mCast(
-				MazewarPacket.CLIENT_FIRE, null, Mazewar.tokenMaster);
+		new ClientMulticast(gui).mCast(MazewarPacket.CLIENT_FIRE, null);
 	}
 
 	public void left() {
-		new ClientMulticast(gui, tokenLock).mCast(
-				MazewarPacket.CLIENT_LEFT, null, Mazewar.tokenMaster);
+		new ClientMulticast(gui).mCast(MazewarPacket.CLIENT_LEFT, null);
 	}
 
 	public void right() {
-		new ClientMulticast(gui, tokenLock).mCast(
-				MazewarPacket.CLIENT_RIGHT, null, Mazewar.tokenMaster);
+		new ClientMulticast(gui).mCast(MazewarPacket.CLIENT_RIGHT, null);
 	}
 
 	public void respawn(Point point, Direction d) {
@@ -201,7 +191,6 @@ public class ClientListenerHandlerThread extends Thread {
 		PlayerMeta newPos = new PlayerMeta(Mazewar.guiClient.getId(),
 				Mazewar.guiClient.getName(), point.getX(), point.getY(),
 				d.toString(), gui.getHostname(), gui.getPort());
-		new ClientMulticast(gui, tokenLock).mCast(
-				MazewarPacket.CLIENT_RESPAWN, newPos, Mazewar.tokenMaster);
+		new ClientMulticast(gui).mCast(MazewarPacket.CLIENT_RESPAWN, newPos);
 	}
 }

@@ -1,4 +1,6 @@
 import java.io.IOException;
+import java.io.InvalidClassException;
+import java.io.NotSerializableException;
 import java.io.ObjectOutputStream;
 import java.util.Iterator;
 import java.util.concurrent.BlockingQueue;
@@ -6,16 +8,13 @@ import java.util.concurrent.locks.Lock;
 
 public class ClientMulticast {
 	private GUIClient self;
-	// Lock to manage access to the token
-	private Lock tokenLock;
 
-	public ClientMulticast(GUIClient self, Lock tokenLock) {
+	public ClientMulticast(GUIClient self) {
 		this.self = self;
-		this.tokenLock = tokenLock;
 	}
 
-	public void mCast(int action, PlayerMeta newPosition, TokenMaster tokenMaster) {
-		tokenMaster.setNeedToken();
+	public void mCast(int action, PlayerMeta newPosition) {
+		Mazewar.tokenMaster.setNeedToken();
 
 		MazewarPacket packetToOthers = new MazewarPacket();
 		packetToOthers.type = MazewarPacket.CLIENT_ACTION;
@@ -57,9 +56,8 @@ public class ClientMulticast {
 				try {
 					other.getOut().writeObject(packetToOthers);
 					other.getOut().flush();
-					Mazewar.consolePrintLn(self.getName()
-							+ ": sent action to respawn to others successfully");
-
+					Mazewar.consolePrintLn("Sent action to respawn to "
+							+ other.getName());
 				} catch (IOException e) {
 					e.printStackTrace();
 				}
@@ -93,10 +91,8 @@ public class ClientMulticast {
 				ClientLocation other = others.next();
 				try {
 					other.getOut().writeObject(packetToOthers);
-					other.getOut().flush();
-					Mazewar.consolePrintLn(self.getName()
-							+ ": sent action to respawn to others successfully");
-
+					Mazewar.consolePrintLn("Sent action to quit to " 
+							+ other.getName());
 				} catch (IOException e) {
 					e.printStackTrace();
 				}
@@ -104,16 +100,25 @@ public class ClientMulticast {
 
 			Mazewar.quit();
 		} else {
-			tokenLock.lock();
-			if (tokenMaster.haveToken()) {
+			Mazewar.tokenMaster.acquireLock();
+			if (Mazewar.tokenMaster.haveToken()) {
 				Iterator<ClientLocation> others = Mazewar.peers.iterator();
 
 				while (others.hasNext()) {
 					ClientLocation other = others.next();
-					ObjectOutputStream oStream = other.getOut();
 					try {
-						oStream.writeObject(packetToOthers);
+						System.out.println("Socket is bound == " + other.getSocket().isBound());
+						System.out.println("Socket is closed == " + other.getSocket().isClosed());
+						System.out.println("Socket is connected == " + other.getSocket().isConnected());
+						System.out.println("Socket input is shutdown == " + other.getSocket().isInputShutdown());
+						System.out.println("Socket should not be inputShutdown or closed!");
+						other.getOut().writeObject(packetToOthers);
+						other.getOut().flush();
 						Mazewar.consolePrintLn("Sent action to " + other.toString());
+					} catch (InvalidClassException e) {
+						e.printStackTrace();
+					} catch (NotSerializableException e) {
+						e.printStackTrace();
 					} catch (IOException e) {
 						e.printStackTrace();
 					}
@@ -160,7 +165,7 @@ public class ClientMulticast {
 			} else {
 				System.out.println("Do you really wanna be sending this...");
 			}
-			tokenLock.unlock();
+			Mazewar.tokenMaster.releaseLock();
 		}
 	}
 
@@ -174,6 +179,7 @@ public class ClientMulticast {
 			ClientLocation other = others.next();
 			try {
 				other.getOut().writeObject(packetToOthers);
+				other.getOut().flush();
 				Mazewar.consolePrintLn(Mazewar.guiClient.getName()
 						+ ": sent ack to others");
 

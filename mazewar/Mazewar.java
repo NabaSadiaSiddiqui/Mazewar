@@ -52,8 +52,6 @@ public class Mazewar extends JFrame {
 	public static BlockingQueue<ClientLocation> peers = new ArrayBlockingQueue<ClientLocation>(SharedData.MAX_PLAYERS - 1);
 	// The player next to the self player in the ring
 	private static ClientLocation nextClient;
-	// Lock to manage access to the token
-	private static Lock tokenLock;
 	// Token master to manage token
 	public static TokenMaster tokenMaster;
 
@@ -170,7 +168,7 @@ public class Mazewar extends JFrame {
 
 		// Lets set up and register with the server
 		new ClientServerListenerHandlerThread(socket, guiClient, maze,
-				nextClient, tokenLock, selfSocket, tokenMaster).start();
+				nextClient, selfSocket).start();
 
 		// Create the panel that will display the maze.
 		overheadPanel = new OverheadMazePanel(maze, guiClient);
@@ -247,8 +245,7 @@ public class Mazewar extends JFrame {
 		String hostname = null;
 		int port = -1;
 
-		tokenLock = new ReentrantLock();
-		tokenMaster = new TokenMaster(tokenLock);
+		tokenMaster = new TokenMaster();
 
 		try {
 			if (args.length == 4) {

@@ -1,13 +1,6 @@
 import java.io.*;
 import java.net.*;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Set;
-import java.util.concurrent.BlockingQueue;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.Lock;
 
@@ -18,8 +11,6 @@ public class ClientServerListenerHandlerThread extends Thread {
 	private GUIClient self;
 	private Maze maze;
 	private ClientLocation next;
-	private Lock tokenLock;
-	private TokenMaster tokenMaster;
 	private int ID_DEFAULT = -1;
 
 	public static ClientListenerHandlerThread clientThread;
@@ -29,9 +20,8 @@ public class ClientServerListenerHandlerThread extends Thread {
 	 */
 	private ServerSocket selfSocket = null;
 
-	public ClientServerListenerHandlerThread(Socket socket, GUIClient self,
-			Maze maze, ClientLocation nextClient, Lock tokenLock,
-			ServerSocket selfSocket, TokenMaster tokenMaster) {
+	public ClientServerListenerHandlerThread(Socket socket, GUIClient self, Maze maze,
+			ClientLocation nextClient, ServerSocket selfSocket) {
 		super("ClientServerListenerHandlerThread");
 		try {
 			out = new ObjectOutputStream(socket.getOutputStream());
@@ -39,8 +29,6 @@ public class ClientServerListenerHandlerThread extends Thread {
 			this.self = self;
 			this.maze = maze;
 			this.next = nextClient;
-			this.tokenLock = tokenLock;
-			this.tokenMaster = tokenMaster;
 			this.selfSocket = selfSocket;
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -66,12 +54,11 @@ public class ClientServerListenerHandlerThread extends Thread {
 				case MazewarPacket.SERVER_BROADCAST_PLAYERS:
 					// Lets start the game
 					addRemoteClients(packetFromServer);
-					clientThread = new ClientListenerHandlerThread(self,
-							next, tokenLock, selfSocket, tokenMaster);
+					clientThread = new ClientListenerHandlerThread(self, next, selfSocket);
 					clientThread.start();
 					break;
 				case MazewarPacket.SERVER_SET_TOKEN:
-					tokenMaster.setHaveToken();
+					Mazewar.tokenMaster.setHaveToken();
 					break;
 				default:
 					break;
