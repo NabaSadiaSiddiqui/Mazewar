@@ -60,9 +60,9 @@ public class ClientServerListenerHandlerThread extends Thread {
     			switch(type) {
 	    			case MazewarPacket.SERVER_BROADCAST_PLAYERS:
 	    				// Lets start the game
+	    				addRemoteClients(packetFromServer);
 						clientThread = new ClientListenerHandlerThread(peers, self, next, tokenLock, selfSocket, tokenMaster);										
 						clientThread.start();
-	    				addRemoteClients(packetFromServer);
 	    				break;
 	    			case MazewarPacket.SERVER_SET_TOKEN:
 	    				tokenMaster.setHaveToken();
