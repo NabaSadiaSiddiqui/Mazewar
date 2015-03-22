@@ -4,7 +4,7 @@
  */
 public class SharedData {
 
-	static int MAX_PLAYERS = 2;
+	static int MAX_PLAYERS = 3;
 
 	/**
 	 * Variable to hold current number of players in the game CURR_PLAYERS_COUNT

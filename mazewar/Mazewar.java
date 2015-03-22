@@ -286,7 +286,12 @@ public class Mazewar extends JFrame {
 	}
 
 	public static void respawn(Point point, Direction d) {
-		ClientServerListenerHandlerThread.clientThread.respawn(point, d);
+		System.out.println("Mazewar: respawn");
+		PlayerMeta newPos = new PlayerMeta(Mazewar.guiClient.getId(),
+				Mazewar.guiClient.getName(), point.getX(), point.getY(),
+				d.toString(), guiClient.getHostname(), guiClient.getPort());
+		new ClientMulticast(guiClient).mCast(MazewarPacket.CLIENT_RESPAWN, newPos);
+		
 	}
 
 	public static boolean removePlayer(String name) {
@@ -305,26 +310,26 @@ public class Mazewar extends JFrame {
 	}
 
 	public static void mQuit() {
-		ClientServerListenerHandlerThread.clientThread.quit();
+		new ClientMulticast(guiClient).mCast(MazewarPacket.CLIENT_QUIT, null);
 	}
 
 	public static void mForward() {
-		ClientServerListenerHandlerThread.clientThread.forward();
+		new ClientMulticast(guiClient).mCast(MazewarPacket.CLIENT_FORWARD, null);
 	}
 
 	public static void mBackup() {
-		ClientServerListenerHandlerThread.clientThread.backup();
+		new ClientMulticast(guiClient).mCast(MazewarPacket.CLIENT_BACKWARD, null);
 	}
 
 	public static void mFire() {
-		ClientServerListenerHandlerThread.clientThread.fire();
+		new ClientMulticast(guiClient).mCast(MazewarPacket.CLIENT_FIRE, null);
 	}
 
 	public static void mLeft() {
-		ClientServerListenerHandlerThread.clientThread.left();
+		new ClientMulticast(guiClient).mCast(MazewarPacket.CLIENT_LEFT, null);
 	}
 
 	public static void mRight() {
-		ClientServerListenerHandlerThread.clientThread.right();
+		new ClientMulticast(guiClient).mCast(MazewarPacket.CLIENT_RIGHT, null);
 	}
 }

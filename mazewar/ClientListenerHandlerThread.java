@@ -161,36 +161,4 @@ public class ClientListenerHandlerThread extends Thread {
 			}
 		}
 	}
-
-	public void quit() {
-		new ClientMulticast(gui).mCast(MazewarPacket.CLIENT_QUIT, null);
-	}
-
-	public void forward() {
-		new ClientMulticast(gui).mCast(MazewarPacket.CLIENT_FORWARD, null);
-	}
-
-	public void backup() {
-		new ClientMulticast(gui).mCast(MazewarPacket.CLIENT_BACKWARD, null);
-	}
-
-	public void fire() {
-		new ClientMulticast(gui).mCast(MazewarPacket.CLIENT_FIRE, null);
-	}
-
-	public void left() {
-		new ClientMulticast(gui).mCast(MazewarPacket.CLIENT_LEFT, null);
-	}
-
-	public void right() {
-		new ClientMulticast(gui).mCast(MazewarPacket.CLIENT_RIGHT, null);
-	}
-
-	public void respawn(Point point, Direction d) {
-		System.out.println("Mazewar: respawn");
-		PlayerMeta newPos = new PlayerMeta(Mazewar.guiClient.getId(),
-				Mazewar.guiClient.getName(), point.getX(), point.getY(),
-				d.toString(), gui.getHostname(), gui.getPort());
-		new ClientMulticast(gui).mCast(MazewarPacket.CLIENT_RESPAWN, newPos);
-	}
 }
