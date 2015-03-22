@@ -55,7 +55,6 @@ public class ClientMulticast {
 				ClientLocation other = others.next();
 				try {
 					other.getOut().writeObject(packetToOthers);
-					other.getOut().flush();
 					Mazewar.consolePrintLn("Sent action to respawn to "
 							+ other.getName());
 				} catch (IOException e) {
@@ -85,20 +84,6 @@ public class ClientMulticast {
 				System.err.println("What action did you just perform?!?!");
 				break;
 			}
-		} else if (action == MazewarPacket.CLIENT_QUIT) {
-			Iterator<ClientLocation> others = Mazewar.peers.iterator();
-			while (others.hasNext()) {
-				ClientLocation other = others.next();
-				try {
-					other.getOut().writeObject(packetToOthers);
-					Mazewar.consolePrintLn("Sent action to quit to " 
-							+ other.getName());
-				} catch (IOException e) {
-					e.printStackTrace();
-				}
-			}
-
-			Mazewar.quit();
 		} else {
 			Mazewar.tokenMaster.acquireLock();
 			if (Mazewar.tokenMaster.haveToken()) {
@@ -107,14 +92,7 @@ public class ClientMulticast {
 				while (others.hasNext()) {
 					ClientLocation other = others.next();
 					try {
-						System.out.println("Local Port: " + other.getSocket().getLocalPort());
-						System.out.println("Remote Port: " + other.getSocket().getPort());
-						System.out.println("Inet Address: " + other.getSocket().getInetAddress());
-						System.out.println("Local Address: " + other.getSocket().getLocalAddress());
-						System.out.println("Local Socket Address: " + other.getSocket().getLocalSocketAddress());
-						System.out.println("Remote Socket Address: " + other.getSocket().getRemoteSocketAddress());
 						other.getOut().writeObject(packetToOthers);
-						other.getOut().flush();
 						Mazewar.consolePrintLn("Sent action to " + other.toString());
 					} catch (InvalidClassException e) {
 						e.printStackTrace();
@@ -158,6 +136,9 @@ public class ClientMulticast {
 					Direction d = Direction.strToDir(newPosition
 							.getOrientation());
 					player.respawn(name, p, d);
+					break;
+				case MazewarPacket.CLIENT_QUIT:
+					Mazewar.quit();
 					break;
 				default:
 					System.err.println("What action did you just perform?!?!");

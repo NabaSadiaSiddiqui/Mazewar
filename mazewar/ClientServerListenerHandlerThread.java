@@ -6,11 +6,11 @@ import java.util.concurrent.locks.Lock;
 
 public class ClientServerListenerHandlerThread extends Thread {
 
+	private String TAG = "ClientServerListenerHandlerThread";
 	private ObjectOutputStream out = null;
 	private ObjectInputStream in = null;
 	private GUIClient self;
 	private Maze maze;
-	private ClientLocation next;
 	private int ID_DEFAULT = -1;
 
 	/**
@@ -18,15 +18,14 @@ public class ClientServerListenerHandlerThread extends Thread {
 	 */
 	private ServerSocket selfSocket = null;
 
-	public ClientServerListenerHandlerThread(Socket socket, GUIClient self, Maze maze,
-			ClientLocation nextClient, ServerSocket selfSocket) {
+	public ClientServerListenerHandlerThread(Socket socket, GUIClient self,
+			Maze maze, ServerSocket selfSocket) {
 		super("ClientServerListenerHandlerThread");
 		try {
 			out = new ObjectOutputStream(socket.getOutputStream());
 			in = new ObjectInputStream(socket.getInputStream());
 			this.self = self;
 			this.maze = maze;
-			this.next = nextClient;
 			this.selfSocket = selfSocket;
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -56,7 +55,7 @@ public class ClientServerListenerHandlerThread extends Thread {
 						public void run() {
 							while(true) {
 								try {
-									new ClientListenerHandlerThread(self, next, selfSocket.accept()).start();
+									new ClientListenerHandlerThread(self, selfSocket.accept()).start();
 								} catch (IOException e) {
 									e.printStackTrace();
 								}
@@ -76,7 +75,7 @@ public class ClientServerListenerHandlerThread extends Thread {
 			}
 
 		} catch (IOException e) {
-			System.err.println("ERROR: Could not write to output stream");
+			System.err.println(TAG+"::"+"Line80::ERROR: Could not write to output stream");
 			System.exit(1);
 		} catch (ClassNotFoundException e) {
 			System.err
@@ -128,7 +127,7 @@ public class ClientServerListenerHandlerThread extends Thread {
 				}
 			}
 		} catch (IOException e) {
-			System.err.println("ERROR: Could not write to output stream");
+			System.err.println(TAG+"::"+"Line132::ERROR: Could not write to output stream");
 			System.exit(1);
 		} catch (ClassNotFoundException e) {
 			System.err
@@ -169,7 +168,7 @@ public class ClientServerListenerHandlerThread extends Thread {
 				self.setId(packetFromServer.clientId);
 			}
 		} catch (IOException e) {
-			System.err.println("ERROR: Could not write to output stream");
+			System.err.println(TAG+"::"+"Line173::ERROR: Could not write to output stream");
 			System.exit(1);
 		} catch (ClassNotFoundException e) {
 			System.err
@@ -209,7 +208,7 @@ public class ClientServerListenerHandlerThread extends Thread {
 					Mazewar.peers.add(other);
 					
 					if (player.getId() == nextClientId) {
-						this.next = other;
+						Mazewar.next = other;
 						System.out.println("Set next client in the ring to "
 								+ player.getName());
 					}
@@ -240,7 +239,7 @@ public class ClientServerListenerHandlerThread extends Thread {
 			// Tell server you are quiting
 			out.writeObject(packetToServer);
 		} catch (IOException e) {
-			System.err.println("ERROR: Could not write to output stream");
+			System.err.println(TAG+"::"+"Line244::ERROR: Could not write to output stream");
 			System.exit(1);
 		}
 	}

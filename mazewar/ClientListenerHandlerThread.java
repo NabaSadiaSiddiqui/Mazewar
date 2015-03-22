@@ -9,7 +9,6 @@ import java.util.concurrent.locks.Lock;
  */
 public class ClientListenerHandlerThread extends Thread {
 	private static GUIClient gui;
-	private ClientLocation next;
 	private int nAcks = 0;
 
 	/**
@@ -18,11 +17,10 @@ public class ClientListenerHandlerThread extends Thread {
 	private ObjectInputStream selfIn = null;
 	private Socket selfConn = null;
 
-	public ClientListenerHandlerThread(GUIClient gui, ClientLocation nextClient, Socket selfConn) {
+	public ClientListenerHandlerThread(GUIClient gui, Socket selfConn) {
 		super("ClientListenerHandlerThread");
 		System.out.println("Created thread to listen to incoming actions from other players in the game");
 		this.gui = gui;
-		this.next = nextClient;
 		this.selfConn = selfConn;
 	}
 
@@ -50,7 +48,7 @@ public class ClientListenerHandlerThread extends Thread {
 							e.printStackTrace();
 						}
 						if (Mazewar.tokenMaster.haveToken() && !Mazewar.tokenMaster.needToken()) { // dont need it BUT have it
-							Mazewar.tokenMaster.passToken(this.next);
+							Mazewar.tokenMaster.passToken(Mazewar.next);
 						}
 						break;
 					case MazewarPacket.CLIENT_ACTION:
@@ -116,15 +114,13 @@ public class ClientListenerHandlerThread extends Thread {
 						if (nAcks == (SharedData.MAX_PLAYERS - 1)) {
 							nAcks = 0;
 							Mazewar.tokenMaster.unsetNeedToken();
-							Mazewar.tokenMaster.passToken(this.next);
+							Mazewar.tokenMaster.passToken(Mazewar.next);
 						}
 						break;
 					default:
 						System.out.println("Got some mysterious token");
 						break;
 				}
-
-				//packetFromClient = (MazewarPacket) selfIn.readObject();
 			}
 			
 			/**
@@ -149,7 +145,8 @@ public class ClientListenerHandlerThread extends Thread {
 				break;
 			}
 		}
-		if (_this.getId() == this.next.getId()) {
+		if (_this.getId() == Mazewar.next.getId()) {
+			System.out.println("ClientListenerHandlerThread::need to reaasign next client");
 			reassignNextClient(_this.getId());
 		}
 		Mazewar.peers.remove(_this);
@@ -166,8 +163,9 @@ public class ClientListenerHandlerThread extends Thread {
 		while (others.hasNext()) {
 			ClientLocation other = (ClientLocation) others.next();
 			if (other.getId() == nextClientId) {
-				this.next = other;
-				System.out.println("Set next client in the ring");
+				Mazewar.next = other;
+				System.out.println("Set next client in the ring to " + other.getName());
+				Mazewar.tokenMaster.setHaveToken();
 				break;
 			}
 		}

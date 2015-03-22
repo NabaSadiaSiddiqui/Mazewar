@@ -51,7 +51,7 @@ public class Mazewar extends JFrame {
 	 */
 	public static BlockingQueue<ClientLocation> peers = new ArrayBlockingQueue<ClientLocation>(SharedData.MAX_PLAYERS - 1);
 	// The player next to the self player in the ring
-	private static ClientLocation nextClient;
+	public static ClientLocation next;
 	// Token master to manage token
 	public static TokenMaster tokenMaster;
 	// Server handler thread
@@ -169,8 +169,8 @@ public class Mazewar extends JFrame {
 		guiClient.setPort(selfPort);
 		
 		// Lets set up and register with the server
-		sHandler = new ClientServerListenerHandlerThread(socket, guiClient, maze,
-				nextClient, selfSocket);
+		sHandler = new ClientServerListenerHandlerThread(socket, guiClient,
+				maze, selfSocket);
 		sHandler.start();
 		
 		this.addKeyListener(guiClient);
