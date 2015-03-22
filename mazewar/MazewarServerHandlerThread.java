@@ -106,9 +106,10 @@ public class MazewarServerHandlerThread extends Thread {
 				if (packetFromClient.type == MazewarPacket.CLIENT_QUIT) {
 					String player = packetFromClient.player;
 					ServerState.allPlayers.remove(player);
-					ServerState.outAll.get(player).close();
+					//ServerState.outAll.get(player).close();
 					ServerState.outAll.remove(player);
 					System.out.println(player + " has quit");
+					gotQuitPacket = true;
 					continue;
 				}
 			}
