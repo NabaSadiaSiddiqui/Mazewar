@@ -54,6 +54,8 @@ public class Mazewar extends JFrame {
 	private static ClientLocation nextClient;
 	// Token master to manage token
 	public static TokenMaster tokenMaster;
+	// Server handler thread
+	private static ClientServerListenerHandlerThread sHandler;
 
 	/**
 	 * The default width of the {@link Maze}.
@@ -129,6 +131,7 @@ public class Mazewar extends JFrame {
 	 * Static method for performing cleanup before exiting the game.
 	 */
 	public static void quit() {
+		sHandler.unregisterSelf();
 		System.exit(0);
 	}
 
@@ -162,13 +165,15 @@ public class Mazewar extends JFrame {
 
 		// Create the GUIClient and connect it to the KeyListener queue
 		guiClient = new GUIClient(name);
-		this.addKeyListener(guiClient);
 		guiClient.setHostname(selfHostname);
 		guiClient.setPort(selfPort);
-
+		
 		// Lets set up and register with the server
-		new ClientServerListenerHandlerThread(socket, guiClient, maze,
-				nextClient, selfSocket).start();
+		sHandler = new ClientServerListenerHandlerThread(socket, guiClient, maze,
+				nextClient, selfSocket);
+		sHandler.start();
+		
+		this.addKeyListener(guiClient);
 
 		// Create the panel that will display the maze.
 		overheadPanel = new OverheadMazePanel(maze, guiClient);

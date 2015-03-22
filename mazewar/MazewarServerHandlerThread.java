@@ -28,8 +28,8 @@ public class MazewarServerHandlerThread extends Thread {
 			ObjectOutputStream toClient = new ObjectOutputStream(
 					socket.getOutputStream());
 
-			while (!gotQuitPacket
-					&& (packetFromClient = (MazewarPacket) fromClient
+			while (!gotQuitPacket &&
+					(packetFromClient = (MazewarPacket) fromClient
 							.readObject()) != null) {
 				/* Create a packet to send reply back to client */
 				MazewarPacket packetToClient = new MazewarPacket();
@@ -99,6 +99,16 @@ public class MazewarServerHandlerThread extends Thread {
 					if (SharedData.MAX_PLAYERS == SharedData.CURR_PLAYERS_COUNT) {
 						introducePlayers();
 					}
+					continue;
+				}
+				
+				/* process player exit */
+				if (packetFromClient.type == MazewarPacket.CLIENT_QUIT) {
+					String player = packetFromClient.player;
+					ServerState.allPlayers.remove(player);
+					ServerState.outAll.get(player).close();
+					ServerState.outAll.remove(player);
+					System.out.println(player + " has quit");
 					continue;
 				}
 			}

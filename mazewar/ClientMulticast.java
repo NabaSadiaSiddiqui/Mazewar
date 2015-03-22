@@ -107,11 +107,12 @@ public class ClientMulticast {
 				while (others.hasNext()) {
 					ClientLocation other = others.next();
 					try {
-						System.out.println("Socket is bound == " + other.getSocket().isBound());
-						System.out.println("Socket is closed == " + other.getSocket().isClosed());
-						System.out.println("Socket is connected == " + other.getSocket().isConnected());
-						System.out.println("Socket input is shutdown == " + other.getSocket().isInputShutdown());
-						System.out.println("Socket should not be inputShutdown or closed!");
+						System.out.println("Local Port: " + other.getSocket().getLocalPort());
+						System.out.println("Remote Port: " + other.getSocket().getPort());
+						System.out.println("Inet Address: " + other.getSocket().getInetAddress());
+						System.out.println("Local Address: " + other.getSocket().getLocalAddress());
+						System.out.println("Local Socket Address: " + other.getSocket().getLocalSocketAddress());
+						System.out.println("Remote Socket Address: " + other.getSocket().getRemoteSocketAddress());
 						other.getOut().writeObject(packetToOthers);
 						other.getOut().flush();
 						Mazewar.consolePrintLn("Sent action to " + other.toString());

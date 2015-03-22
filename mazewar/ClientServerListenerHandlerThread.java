@@ -220,4 +220,20 @@ public class ClientServerListenerHandlerThread extends Thread {
 	private boolean isSelf(String hostname, int port) {
 		return self.getHostname().equals(hostname) && self.getPort() == port;
 	}
+	
+	public void unregisterSelf() {
+		String name = self.getName();
+
+		MazewarPacket packetToServer = new MazewarPacket();
+		packetToServer.player = self.getName();
+		packetToServer.type = MazewarPacket.CLIENT_QUIT;
+
+		try {
+			// Tell server you are quiting
+			out.writeObject(packetToServer);
+		} catch (IOException e) {
+			System.err.println("ERROR: Could not write to output stream");
+			System.exit(1);
+		}
+	}
 }
