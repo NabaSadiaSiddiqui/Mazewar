@@ -102,7 +102,7 @@ public class ClientListenerHandlerThread extends Thread {
 								Mazewar.consolePrint("Action: unknown");
 								break;
 						}
-						new ClientMulticast().sendAck();
+						ClientMulticast.sendAck();
 						break;
 					case MazewarPacket.CLIENT_ACK:
 						if(!Mazewar.tokenMaster.haveToken())

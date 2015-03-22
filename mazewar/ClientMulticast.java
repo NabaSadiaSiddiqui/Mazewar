@@ -8,10 +8,7 @@ import java.util.concurrent.locks.Lock;
 
 public class ClientMulticast {
 
-	public ClientMulticast() {
-	}
-
-	public void mCast(int action, PlayerMeta newPosition) {
+	public static void mCast(int action, PlayerMeta newPosition) {
 		Mazewar.tokenMaster.setNeedToken();
 
 		MazewarPacket packetToOthers = new MazewarPacket();
@@ -149,7 +146,7 @@ public class ClientMulticast {
 		}
 	}
 
-	public void sendAck() {
+	public static void sendAck() {
 		MazewarPacket packetToOthers = new MazewarPacket();
 		packetToOthers.type = MazewarPacket.CLIENT_ACK;
 		packetToOthers.player = Mazewar.guiClient.getName();
