@@ -8,7 +8,6 @@ import java.util.concurrent.locks.Lock;
  * Listens to incoming requests from other clients
  */
 public class ClientListenerHandlerThread extends Thread {
-	private static GUIClient gui;
 	private int nAcks = 0;
 
 	/**
@@ -20,7 +19,6 @@ public class ClientListenerHandlerThread extends Thread {
 	public ClientListenerHandlerThread(GUIClient gui, Socket selfConn) {
 		super("ClientListenerHandlerThread");
 		System.out.println("Created thread to listen to incoming actions from other players in the game");
-		this.gui = gui;
 		this.selfConn = selfConn;
 	}
 
@@ -104,7 +102,7 @@ public class ClientListenerHandlerThread extends Thread {
 								Mazewar.consolePrint("Action: unknown");
 								break;
 						}
-						new ClientMulticast(gui).sendAck();
+						new ClientMulticast().sendAck();
 						break;
 					case MazewarPacket.CLIENT_ACK:
 						if(!Mazewar.tokenMaster.haveToken())

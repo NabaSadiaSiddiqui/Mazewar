@@ -7,10 +7,8 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.locks.Lock;
 
 public class ClientMulticast {
-	private GUIClient self;
 
-	public ClientMulticast(GUIClient self) {
-		this.self = self;
+	public ClientMulticast() {
 	}
 
 	public void mCast(int action, PlayerMeta newPosition) {
@@ -62,7 +60,7 @@ public class ClientMulticast {
 				}
 			}
 
-			String playerName = self.getName();
+			String playerName = Mazewar.guiClient.getName();
 			Iterator allClients = Mazewar.maze.getClients();
 			Client player = null;
 			while (allClients.hasNext()) {
@@ -104,7 +102,7 @@ public class ClientMulticast {
 				}
 
 				// Now make the move on our end as well
-				String playerName = self.getName();
+				String playerName = Mazewar.guiClient.getName();
 				Iterator allClients = Mazewar.maze.getClients();
 				Client player = null;
 				while (allClients.hasNext()) {

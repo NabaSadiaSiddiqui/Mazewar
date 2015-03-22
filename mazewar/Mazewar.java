@@ -290,7 +290,7 @@ public class Mazewar extends JFrame {
 		PlayerMeta newPos = new PlayerMeta(Mazewar.guiClient.getId(),
 				Mazewar.guiClient.getName(), point.getX(), point.getY(),
 				d.toString(), guiClient.getHostname(), guiClient.getPort());
-		new ClientMulticast(guiClient).mCast(MazewarPacket.CLIENT_RESPAWN, newPos);
+		new ClientMulticast().mCast(MazewarPacket.CLIENT_RESPAWN, newPos);
 		
 	}
 
@@ -310,26 +310,26 @@ public class Mazewar extends JFrame {
 	}
 
 	public static void mQuit() {
-		new ClientMulticast(guiClient).mCast(MazewarPacket.CLIENT_QUIT, null);
+		new ClientMulticast().mCast(MazewarPacket.CLIENT_QUIT, null);
 	}
 
 	public static void mForward() {
-		new ClientMulticast(guiClient).mCast(MazewarPacket.CLIENT_FORWARD, null);
+		new ClientMulticast().mCast(MazewarPacket.CLIENT_FORWARD, null);
 	}
 
 	public static void mBackup() {
-		new ClientMulticast(guiClient).mCast(MazewarPacket.CLIENT_BACKWARD, null);
+		new ClientMulticast().mCast(MazewarPacket.CLIENT_BACKWARD, null);
 	}
 
 	public static void mFire() {
-		new ClientMulticast(guiClient).mCast(MazewarPacket.CLIENT_FIRE, null);
+		new ClientMulticast().mCast(MazewarPacket.CLIENT_FIRE, null);
 	}
 
 	public static void mLeft() {
-		new ClientMulticast(guiClient).mCast(MazewarPacket.CLIENT_LEFT, null);
+		new ClientMulticast().mCast(MazewarPacket.CLIENT_LEFT, null);
 	}
 
 	public static void mRight() {
-		new ClientMulticast(guiClient).mCast(MazewarPacket.CLIENT_RIGHT, null);
+		new ClientMulticast().mCast(MazewarPacket.CLIENT_RIGHT, null);
 	}
 }
