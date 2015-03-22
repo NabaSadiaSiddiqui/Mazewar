@@ -7,10 +7,9 @@ Team Members:
 Steps to run the game:  
 1. Run 'Make'  
 2. Start the server as `./server portNumber`  
-3. Start the clients as `./run hostName portNumber`  
-  
+3. Start the clients as `./run server_hostName server_portNumber client_hostName client_portNumber`
   
 The game makes the following assumptions:  
-1. Only 2 players can play at a time  
-2. There are no dynamic joins  
-3. When a player quits, you have to restart the server to start another round  
+1. All player names are unique  
+2. All players enter the correct hostName and portNumber they are listening on  
+3. Lookup server is always running  
