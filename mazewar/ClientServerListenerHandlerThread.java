@@ -13,8 +13,6 @@ public class ClientServerListenerHandlerThread extends Thread {
 	private ClientLocation next;
 	private int ID_DEFAULT = -1;
 
-	//public static ClientListenerHandlerThread clientThread;
-
 	/**
 	 * Socket through which communication will be made from other clients
 	 */
@@ -54,7 +52,18 @@ public class ClientServerListenerHandlerThread extends Thread {
 				case MazewarPacket.SERVER_BROADCAST_PLAYERS:
 					// Lets start the game
 					addRemoteClients(packetFromServer);
-					new ClientListenerHandlerThread(self, next, selfSocket).start();
+					Thread t = new Thread() {
+						public void run() {
+							while(true) {
+								try {
+									new ClientListenerHandlerThread(self, next, selfSocket.accept()).start();
+								} catch (IOException e) {
+									e.printStackTrace();
+								}
+							}
+						}
+					};
+					t.start();
 					break;
 				case MazewarPacket.SERVER_SET_TOKEN:
 					Mazewar.tokenMaster.setHaveToken();

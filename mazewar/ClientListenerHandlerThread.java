@@ -17,19 +17,21 @@ public class ClientListenerHandlerThread extends Thread {
 	 */
 	private ObjectInputStream selfIn = null;
 	private ServerSocket selfSocket = null;
+	private Socket selfConn = null;
 
-	public ClientListenerHandlerThread(GUIClient gui, ClientLocation nextClient, ServerSocket selfSock) {
+	public ClientListenerHandlerThread(GUIClient gui, ClientLocation nextClient, Socket selfConn) {
 		super("ClientListenerHandlerThread");
 		System.out.println("Created thread to listen to incoming actions from other players in the game");
 		this.gui = gui;
 		this.next = nextClient;
-		this.selfSocket = selfSock;
+		this.selfConn = selfConn;
+		//this.selfSocket = selfSock;
 	}
 
 	public void run() {
 		try {
 			System.out.println("ClientListenerHandlerThread is running");
-			Socket selfConn = selfSocket.accept();
+			//Socket selfConn = selfSocket.accept();
 			selfIn = new ObjectInputStream(selfConn.getInputStream());
 			MazewarPacket packetFromClient = (MazewarPacket) selfIn.readObject();
 
